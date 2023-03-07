@@ -4,11 +4,11 @@ import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient {
-  constructor(private configService: ConfigService) {
+  constructor(config: ConfigService) {
     super({
       datasources: {
         db: {
-          url: 'mysql://root:password@localhost:3306/BookMyEvent?schema=public',
+          url: config.get('TEST_DATABASE_URL'),
         },
       },
     });

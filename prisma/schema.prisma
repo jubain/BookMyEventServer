@@ -19,12 +19,34 @@ enum Role {
   CUSTOMER
 }
 
+enum Environment {
+  INDOOR
+  OUTDOOR
+}
+
+enum Wifi {
+  YES
+  NO
+}
+
+enum Venue_Type {
+  ANY
+  WEDDING
+  CONVENTION
+  SOCIAL
+  NETWORKING
+  CORPORATE
+  FESTIVAL
+  FASHION
+  CLUB
+}
+
 model User {
   id            Int             @id @default(autoincrement())
   email         String          @unique
   name          String
   role          Role            @default(CUSTOMER)
-  phone         Int
+  phone         BigInt
   password      String
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -39,19 +61,22 @@ model User {
 }
 
 model Venue {
-  id            Int             @id @default(autoincrement())
-  name          String
-  description   String
+  id          Int    @id @default(autoincrement())
+  name        String
+  description String
+
   price         Float
   address1      String
   address2      String?
   city          String
   postcode      String
   country       String
+  website       String?
+  people        Int
   toilets       Int
   chairs        Int
   tables        Int
-  wifi          Boolean         @default(true)
+  wifi          Wifi
   kitchens      Int
   User          User?           @relation(fields: [userId], references: [id])
   userId        Int?
@@ -63,6 +88,30 @@ model Venue {
   Event         Event[]
   VenueReview   VenueReview[]
   SavedVenue    SavedVenue[]
+  environment   Environment
+  latitude      Float           @unique
+  longitude     Float           @unique
+  VenueType     VenueType[]
+}
+
+model Type {
+  id        Int         @id @default(autoincrement())
+  name      Venue_Type  @unique
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  VenueType VenueType[]
+}
+
+model VenueType {
+  Venue   Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId Int
+
+  Type   Type @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  typeId Int
+
+  assignedAt DateTime @default(now())
+
+  @@id([venueId, typeId])
 }
 
 model Event {
