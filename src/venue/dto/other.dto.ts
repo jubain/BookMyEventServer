@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { Cities } from './cities';
 
 enum Price {
   ASCENDING = 'ASCENDING',
@@ -11,10 +12,10 @@ enum Environment {
 }
 
 export class QueryParamDto {
-  @ApiProperty({ required: false })
-  @IsString()
+  @ApiProperty({ required: false, enum: Cities, enumName: 'cities' })
+  @IsEnum(Cities)
   @IsOptional()
-  city?: string;
+  city?: Cities;
 
   @ApiProperty({ required: false, enum: Environment })
   @IsEnum(Environment)

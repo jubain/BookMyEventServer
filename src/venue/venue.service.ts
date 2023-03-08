@@ -67,7 +67,22 @@ export class VenueService {
   }
 
   async findOne(id: number) {
-    return `This action returns a #${id} venue`;
+    const venue = await this.prisma.venue.findUnique({
+      where: { id: id },
+      include: {
+        VenueBookings: true,
+        VenueReview: true,
+        VenueType: { select: { Type: true } },
+        User: true,
+      },
+    });
+    const user = {
+      name: venue.User.name,
+      phone: JSON.parse('' + venue.User.phone),
+      email: venue.User.email,
+    };
+    delete venue.User;
+    return { venue, user };
   }
 
   remove(id: number) {

@@ -7,8 +7,6 @@ import {
   Param,
   Delete,
   UseInterceptors,
-  UploadedFile,
-  ParseFilePipe,
   UploadedFiles,
   UseGuards,
   Req,
@@ -22,14 +20,9 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
-  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import {
-  FileFieldsInterceptor,
-  FileInterceptor,
-} from '@nestjs/platform-express';
-import { MyFileDto } from './dto/file.dto';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { MulterError, diskStorage } from 'multer';
 import { extname } from 'path';
 import { AuthGuard } from '@nestjs/passport';
