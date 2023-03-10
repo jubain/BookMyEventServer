@@ -28,7 +28,7 @@ export class UserController {
   //   @Role(RoleType.CUSTOMER)
   @HttpCode(200)
   getMe(@Req() req: Request) {
-    return req.user;
+    return this.userService.getMe(req.user);
   }
 
   @Put('me')
@@ -43,5 +43,17 @@ export class UserController {
   @HttpCode(200)
   deleteMe(@Req() req: Request) {
     return this.userService.deleteMe(req.user);
+  }
+
+  @Get('bookings')
+  @HttpCode(200)
+  getBookings(@Req() req: Request) {
+    return this.userService.getBookings(req.user);
+  }
+
+  @Get('hostings')
+  @HttpCode(200)
+  getHostings(@Req() req: Request) {
+    return this.userService.getHostings(req.user);
   }
 }

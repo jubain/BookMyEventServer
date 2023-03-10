@@ -28,22 +28,16 @@ import { extname } from 'path';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { QueryParamDto } from './dto/other.dto';
+import { CreateVenueBookingDto } from './dto/createBooking.dto';
 
 @Controller('venue')
 @ApiTags('venue')
 export class VenueController {
   constructor(private readonly venueService: VenueService) {}
 
-  // @Post()
-  // @ApiOperation({ summary: 'create' })
-  // create(@Body() createVenueDto: CreateVenueDto) {
-  //   return this.venueService.create(createVenueDto);
-  // }
-
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Get()
-  // @ApiQuery({ type: QueryParamDto, required: false })
   findAll(@Req() req: Request, @Query() filterDto: QueryParamDto) {
     return this.venueService.findAll(req.user, filterDto);
   }
@@ -141,10 +135,15 @@ export class VenueController {
     @Req() req: Request,
     @UploadedFiles() coverImage: Express.Multer.File,
     @UploadedFiles() images: Express.Multer.File,
-    // @UploadedFiles() files: Express.Multer.File[],
     @Body() body: CreateVenueDto,
   ) {
-    // console.log(coverImage, images, body);
     return this.venueService.create(req.user, body);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/booking')
+  createBooking(@Req() req: Request, @Body() body: CreateVenueBookingDto) {
+    return this.venueService.createBooking(req.user, body);
   }
 }

@@ -4,7 +4,7 @@ CREATE TABLE `User` (
     `email` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
     `role` ENUM('OWNER', 'CUSTOMER') NOT NULL DEFAULT 'CUSTOMER',
-    `phone` INTEGER NOT NULL,
+    `phone` BIGINT NOT NULL,
     `password` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -24,18 +24,45 @@ CREATE TABLE `Venue` (
     `city` VARCHAR(191) NOT NULL,
     `postcode` VARCHAR(191) NOT NULL,
     `country` VARCHAR(191) NOT NULL,
+    `website` VARCHAR(191) NULL,
+    `people` INTEGER NOT NULL,
     `toilets` INTEGER NOT NULL,
     `chairs` INTEGER NOT NULL,
     `tables` INTEGER NOT NULL,
-    `wifi` BOOLEAN NOT NULL DEFAULT true,
+    `wifi` ENUM('YES', 'NO') NOT NULL,
     `kitchens` INTEGER NOT NULL,
     `userId` INTEGER NULL,
     `coverImage` VARCHAR(191) NOT NULL,
     `images` JSON NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
+    `environment` ENUM('INDOOR', 'OUTDOOR') NOT NULL,
+    `latitude` DOUBLE NOT NULL,
+    `longitude` DOUBLE NOT NULL,
 
+    UNIQUE INDEX `Venue_latitude_key`(`latitude`),
+    UNIQUE INDEX `Venue_longitude_key`(`longitude`),
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Type` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` ENUM('ANY', 'WEDDING', 'CONVENTION', 'SOCIAL', 'NETWORKING', 'CORPORATE', 'FESTIVAL', 'FASHION', 'CLUB') NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Type_name_key`(`name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `VenueType` (
+    `venueId` INTEGER NOT NULL,
+    `typeId` INTEGER NOT NULL,
+    `assignedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`venueId`, `typeId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -57,11 +84,13 @@ CREATE TABLE `Event` (
 
 -- CreateTable
 CREATE TABLE `VenueBookings` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userId` INTEGER NOT NULL,
     `venueId` INTEGER NOT NULL,
-    `Date` DATETIME(3) NOT NULL,
+    `startDate` DATETIME(3) NOT NULL,
+    `endDate` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `VenueBookings_userId_venueId_key`(`userId`, `venueId`)
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -71,7 +100,6 @@ CREATE TABLE `EventBooking` (
     `tickets` INTEGER NOT NULL,
     `price` DOUBLE NOT NULL,
     `eventId` INTEGER NOT NULL,
-    `venueId` INTEGER NULL,
 
     UNIQUE INDEX `EventBooking_userId_eventId_key`(`userId`, `eventId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -81,6 +109,7 @@ CREATE TABLE `VenueReview` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `venueId` INTEGER NOT NULL,
     `review` VARCHAR(191) NOT NULL,
+    `rating` INTEGER NOT NULL DEFAULT 1,
     `userId` INTEGER NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -120,6 +149,12 @@ CREATE TABLE `SavedVenue` (
 ALTER TABLE `Venue` ADD CONSTRAINT `Venue_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `VenueType` ADD CONSTRAINT `VenueType_venueId_fkey` FOREIGN KEY (`venueId`) REFERENCES `Venue`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `VenueType` ADD CONSTRAINT `VenueType_typeId_fkey` FOREIGN KEY (`typeId`) REFERENCES `Type`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `Event` ADD CONSTRAINT `Event_venueId_fkey` FOREIGN KEY (`venueId`) REFERENCES `Venue`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -136,9 +171,6 @@ ALTER TABLE `EventBooking` ADD CONSTRAINT `EventBooking_userId_fkey` FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE `EventBooking` ADD CONSTRAINT `EventBooking_eventId_fkey` FOREIGN KEY (`eventId`) REFERENCES `Event`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `EventBooking` ADD CONSTRAINT `EventBooking_venueId_fkey` FOREIGN KEY (`venueId`) REFERENCES `Venue`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `VenueReview` ADD CONSTRAINT `VenueReview_venueId_fkey` FOREIGN KEY (`venueId`) REFERENCES `Venue`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

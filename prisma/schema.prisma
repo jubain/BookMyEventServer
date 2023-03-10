@@ -135,14 +135,15 @@ model Event {
 }
 
 model VenueBookings {
+  id     Int  @id @default(autoincrement())
   User   User @relation(fields: [userId], references: [id])
   userId Int
 
-  Venue   Venue    @relation(fields: [venueId], references: [id])
-  venueId Int
-  Date    DateTime
+  Venue     Venue    @relation(fields: [venueId], references: [id])
+  venueId   Int
+  startDate DateTime
+  endDate   DateTime
 
-  @@unique([userId, venueId])
 }
 
 model EventBooking {
@@ -164,6 +165,7 @@ model VenueReview {
   User    User  @relation(fields: [userId], references: [id])
 
   review    String
+  rating    Int      @default(1)
   userId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

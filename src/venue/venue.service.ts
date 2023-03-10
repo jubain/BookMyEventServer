@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -10,6 +11,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { QueryParamDto } from './dto/other.dto';
 import { Venue } from '@prisma/client';
+import { CreateVenueBookingDto } from './dto/createBooking.dto';
 
 @ApiTags('venue')
 @Injectable()
@@ -71,7 +73,10 @@ export class VenueService {
       where: { id: id },
       include: {
         VenueBookings: true,
-        VenueReview: true,
+        VenueReview: {
+          select: { review: true, User: { select: { name: true, id: true } } },
+          // include: { User: { select: { name: true, id: true } } },
+        },
         VenueType: { select: { Type: true } },
         User: true,
       },
@@ -159,6 +164,45 @@ export class VenueService {
       const response = await geoCoding.json();
       const { location } = response.results[0].geometry;
       return location;
+    }
+  }
+
+  async createBooking(user: any, body: CreateVenueBookingDto) {
+    try {
+      const existingBookings = await this.prisma.venueBookings.findMany({
+        where: {
+          venueId: body.venueId,
+        },
+      });
+      if (body.endDate < body.startDate)
+        return new BadRequestException(
+          'End date should be after the start date!',
+        );
+
+      if (existingBookings.length) {
+        const bookingExist = existingBookings.find(
+          (booking) =>
+            body.startDate >= booking.startDate &&
+            body.endDate <= booking.endDate,
+        );
+        if (bookingExist)
+          return new BadRequestException(
+            `Sorry, there is alread a booking between ${bookingExist.startDate} till ${bookingExist.endDate}`,
+          );
+      }
+
+      const venueBooking = await this.prisma.venueBookings.create({
+        data: {
+          userId: user.id,
+          venueId: body.venueId,
+          startDate: body.startDate,
+          endDate: body.endDate,
+        },
+        include: { Venue: { select: { name: true } } },
+      });
+      return venueBooking;
+    } catch (error) {
+      throw new HttpException(error.code, error.message);
     }
   }
 }
