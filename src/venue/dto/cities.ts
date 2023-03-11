@@ -1,4 +1,12 @@
 export enum Cities {
+  Nearby = 'Nearby',
+  London = 'London',
+  Luton = 'Luton',
+  Winchester = 'Winchester',
+  Cambridge = 'Cambridge',
+}
+export enum _Cities {
+  'Near me' = 'Near me',
   'Aberdare' = 'Mid Glamorgan',
   'Aberdeen' = 'Aberdeenshire',
   'Aberdovey' = 'Gwynedd',

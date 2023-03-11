@@ -6,7 +6,6 @@ import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { VenueModule } from './venue/venue.module';
-import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [

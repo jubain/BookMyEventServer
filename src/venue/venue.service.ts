@@ -9,9 +9,10 @@ import { UpdateVenueDto } from './dto/update-venue.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import { QueryParamDto } from './dto/other.dto';
+import { FindVenueDto, QueryParamDto } from './dto/other.dto';
 import { Venue } from '@prisma/client';
 import { CreateVenueBookingDto } from './dto/createBooking.dto';
+import { VenueGateway } from './venue.gateway';
 
 @ApiTags('venue')
 @Injectable()
@@ -55,16 +56,24 @@ export class VenueService {
   async findAll(user: any, filterDto: QueryParamDto) {
     const venues = await this.prisma.venue.findMany({
       where: { userId: user.id },
+      include: { VenueType: true },
     });
 
     return this.filter(filterDto, venues);
   }
 
-  async findAllPublic(filterDto: QueryParamDto) {
+  async findAllPublic(filterDto: QueryParamDto, { coordinates }: FindVenueDto) {
+    if (filterDto.city === 'Nearby') {
+      filterDto.city = await this.findLocationByCord(coordinates);
+    }
     const venues = await this.prisma.venue.findMany({
-      include: { VenueType: true },
+      where: {
+        VenueType: { some: { Type: { name: filterDto.type } } },
+      },
+      include: { VenueType: { select: { Type: true } } },
     });
 
+    delete filterDto.type;
     return this.filter(filterDto, venues);
   }
 
@@ -75,7 +84,6 @@ export class VenueService {
         VenueBookings: true,
         VenueReview: {
           select: { review: true, User: { select: { name: true, id: true } } },
-          // include: { User: { select: { name: true, id: true } } },
         },
         VenueType: { select: { Type: true } },
         User: true,
@@ -167,42 +175,58 @@ export class VenueService {
     }
   }
 
-  async createBooking(user: any, body: CreateVenueBookingDto) {
-    try {
-      const existingBookings = await this.prisma.venueBookings.findMany({
-        where: {
-          venueId: body.venueId,
-        },
-      });
-      if (body.endDate < body.startDate)
-        return new BadRequestException(
-          'End date should be after the start date!',
-        );
-
-      if (existingBookings.length) {
-        const bookingExist = existingBookings.find(
-          (booking) =>
-            body.startDate >= booking.startDate &&
-            body.endDate <= booking.endDate,
-        );
-        if (bookingExist)
-          return new BadRequestException(
-            `Sorry, there is alread a booking between ${bookingExist.startDate} till ${bookingExist.endDate}`,
-          );
-      }
-
-      const venueBooking = await this.prisma.venueBookings.create({
-        data: {
-          userId: user.id,
-          venueId: body.venueId,
-          startDate: body.startDate,
-          endDate: body.endDate,
-        },
-        include: { Venue: { select: { name: true } } },
-      });
-      return venueBooking;
-    } catch (error) {
-      throw new HttpException(error.code, error.message);
+  async findLocationByCord({ lat, lng }: { lat: number; lng: number }) {
+    const location = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${this.config.get(
+        'GOOGLE_API',
+      )}`,
+    );
+    if (location.ok) {
+      const response = await location.json();
+      return response.results[
+        response.results.length - 3
+      ].formatted_address.split(',')[0];
     }
+  }
+
+  async createBooking(user: any, body: CreateVenueBookingDto) {
+    const existingBookings = await this.prisma.venueBookings.findMany({
+      where: {
+        venueId: body.venueId,
+      },
+    });
+    if (body.endDate < body.startDate)
+      throw new BadRequestException('End date should be after the start date!');
+
+    if (existingBookings.length) {
+      const bookingExist = existingBookings.find(
+        (booking) =>
+          body.startDate >= booking.startDate &&
+          body.endDate <= booking.endDate,
+      );
+      if (bookingExist)
+        throw new BadRequestException(
+          `Sorry, there is alread a booking between ${bookingExist.startDate} till ${bookingExist.endDate}`,
+        );
+    }
+
+    const venueBooking = await this.prisma.venueBookings.create({
+      data: {
+        userId: user.id,
+        venueId: body.venueId,
+        startDate: body.startDate,
+        endDate: body.endDate,
+      },
+      include: {
+        Venue: {
+          select: {
+            name: true,
+            User: { select: { id: true, name: true, email: true } },
+          },
+        },
+      },
+    });
+    // this.venueGateway.handleSendMessage(venueBooking);
+    return venueBooking;
   }
 }

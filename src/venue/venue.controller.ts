@@ -11,6 +11,7 @@ import {
   UseGuards,
   Req,
   Query,
+  Render,
 } from '@nestjs/common';
 import { VenueService } from './venue.service';
 import { CreateVenueDto } from './dto/create-venue.dto';
@@ -27,13 +28,23 @@ import { MulterError, diskStorage } from 'multer';
 import { extname } from 'path';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
-import { QueryParamDto } from './dto/other.dto';
+import { FindVenueDto, QueryParamDto } from './dto/other.dto';
 import { CreateVenueBookingDto } from './dto/createBooking.dto';
+import { VenueGateway } from './venue.gateway';
 
 @Controller('venue')
 @ApiTags('venue')
 export class VenueController {
-  constructor(private readonly venueService: VenueService) {}
+  constructor(
+    private readonly venueService: VenueService,
+    private venueGateway: VenueGateway,
+  ) {}
+
+  @Get('index')
+  @Render('index')
+  root() {
+    return { message: 'hello' };
+  }
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
@@ -42,9 +53,9 @@ export class VenueController {
     return this.venueService.findAll(req.user, filterDto);
   }
 
-  @Get('public')
-  findAllPublic(@Query() filterDto: QueryParamDto) {
-    return this.venueService.findAllPublic(filterDto);
+  @Post('public')
+  findAllPublic(@Query() filterDto: QueryParamDto, @Body() body: FindVenueDto) {
+    return this.venueService.findAllPublic(filterDto, body);
   }
 
   @Get(':id')
@@ -143,7 +154,18 @@ export class VenueController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Post('/booking')
-  createBooking(@Req() req: Request, @Body() body: CreateVenueBookingDto) {
-    return this.venueService.createBooking(req.user, body);
+  async createBooking(
+    @Req() req: Request,
+    @Body() body: CreateVenueBookingDto,
+  ) {
+    return await this.venueService
+      .createBooking(req.user, body)
+      .then((venue) => {
+        this.venueGateway.handleSendMessage(venue);
+        return venue;
+      })
+      .catch((err) => {
+        return err;
+      });
   }
 }
