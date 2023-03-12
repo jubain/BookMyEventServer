@@ -10,14 +10,16 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { FindVenueDto, QueryParamDto } from './dto/other.dto';
-import { Venue } from '@prisma/client';
 import { CreateVenueBookingDto } from './dto/createBooking.dto';
-import { VenueGateway } from './venue.gateway';
+import { PrismaClient, Venue } from '@prisma/client';
 
 @ApiTags('venue')
 @Injectable()
 export class VenueService {
-  constructor(private prisma: PrismaService, private config: ConfigService) {}
+  private prismaClient;
+  constructor(private prisma: PrismaService, private config: ConfigService) {
+    this.prismaClient = new PrismaClient();
+  }
 
   async create(user: any, createVenueDto: CreateVenueDto) {
     const location = await this.findGeoLocation(createVenueDto);
