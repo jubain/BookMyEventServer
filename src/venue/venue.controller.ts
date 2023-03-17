@@ -12,6 +12,8 @@ import {
   Req,
   Query,
   Render,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { VenueService } from './venue.service';
 import { CreateVenueDto } from './dto/create-venue.dto';
@@ -31,6 +33,8 @@ import { Request } from 'express';
 import { FindVenueDto, QueryParamDto } from './dto/other.dto';
 import { CreateVenueBookingDto } from './dto/createBooking.dto';
 import { VenueGateway } from './venue.gateway';
+import { S3Service } from 'src/s3/s3.service';
+import * as fs from 'fs';
 
 @Controller('venue')
 @ApiTags('venue')
@@ -38,6 +42,7 @@ export class VenueController {
   constructor(
     private readonly venueService: VenueService,
     private venueGateway: VenueGateway,
+    private s3Service: S3Service,
   ) {}
 
   @Get('index')
@@ -84,7 +89,7 @@ export class VenueController {
           }
         },
         storage: diskStorage({
-          destination: './uploads',
+          // destination: './uploads',
           filename: (req, file, callback) => {
             const uniqueSuffix =
               Date.now() + '-' + Math.round(Math.random() + 1e9);
@@ -100,7 +105,31 @@ export class VenueController {
     @Req() req: Request,
     @Param('id') id: string,
     @Body() updateVenueDto: CreateVenueDto,
+    @UploadedFiles()
+    coverImage: {
+      coverImage: {
+        fieldname: string;
+        originalname: string;
+        encoding: string;
+        mimetype: string;
+        destination: string;
+        filename: string;
+        path: string;
+        size: number;
+      }[];
+    },
+    // @UploadedFiles() coverImage: Express.Multer.File[],
+    @UploadedFiles() images: Express.Multer.File[],
   ) {
+    // if (coverImage.coverImage.length) {
+    //   console.log(coverImage.coverImage[0]);
+    // }
+
+    this.s3Service.addImage(
+      fs.readFileSync(coverImage.coverImage[0].path),
+      coverImage.coverImage[0].filename,
+    );
+    return 'me';
     return this.venueService.update(req.user, +id, updateVenueDto);
   }
 
@@ -144,7 +173,7 @@ export class VenueController {
   )
   create(
     @Req() req: Request,
-    @UploadedFiles() coverImage: Express.Multer.File,
+    @UploadedFile() coverImage: Express.Multer.File,
     @UploadedFiles() images: Express.Multer.File,
     @Body() body: CreateVenueDto,
   ) {

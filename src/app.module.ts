@@ -6,18 +6,19 @@ import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { VenueModule } from './venue/venue.module';
+import { S3Module } from './s3/s3.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath:
-        process.env.NODE_ENV === 'prod' ? '.env' : '.env.development',
+      envFilePath: `.${process.env.NODE_ENV}.env`,
       isGlobal: true,
     }),
     AuthModule,
     UserModule,
     PrismaModule,
     VenueModule,
+    S3Module,
   ],
   controllers: [AppController],
   providers: [AppService],
