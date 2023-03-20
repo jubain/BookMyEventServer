@@ -1,57 +1,65 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, Matches } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Matches,
+} from 'class-validator';
 import { CreateVenueDto, Environment, Wifi } from './create-venue.dto';
 
 export class UpdateVenueDto {
   @ApiProperty({ type: 'string', required: false })
   @IsString()
-  @IsOptional()
+  @IsOptional({ always: true })
   name?: string;
 
   @ApiProperty({ required: false })
   @IsString()
-  @IsOptional()
+  @IsOptional({ always: true })
   description?: string;
 
   @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  type?: string;
+  @IsArray()
+  @IsOptional({ always: true })
+  type?: number[];
 
   @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  @Matches(/^\d+$/, { message: 'Must be a number!' })
+  @IsNumber()
+  @IsOptional({ always: true })
+  // @Matches(/^\d+$/, { message: 'Must be a number!' })
   price?: number;
 
   @ApiProperty({ required: false })
   @IsString()
-  @IsOptional()
+  @IsOptional({ always: true })
   address1?: string;
 
   @ApiProperty({ required: false })
   @IsString()
-  @IsOptional()
+  @IsOptional({ always: true })
   address2?: string;
 
   @ApiProperty({ required: false })
   @IsString()
-  @IsOptional()
+  @IsOptional({ always: true })
   city?: string;
 
   @ApiProperty({ required: false })
   @IsString()
-  @IsOptional()
+  @IsOptional({ always: true })
   postcode?: string;
 
   @ApiProperty({ required: false })
   @IsString()
-  @IsOptional()
+  @IsOptional({ always: true })
   country?: string;
 
   @ApiProperty({ required: false })
   @IsString()
-  @IsOptional()
+  @IsOptional({ always: true })
   @Matches(
     /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi,
     { message: 'Should be valid website' },
@@ -59,63 +67,42 @@ export class UpdateVenueDto {
   website?: string;
 
   @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  @Matches(/^\d+$/, { message: 'Must be a number!' })
-  people?: string;
+  @IsNumber()
+  @IsOptional({ always: true })
+  // @Matches(/^\d+$/, { message: 'Must be a number!' })
+  people?: number;
 
   @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  @Matches(/^\d+$/, { message: 'Must be a number!' })
-  toilets?: string;
+  @IsNumber()
+  @IsOptional({ always: true })
+  // @Matches(/^\d+$/, { message: 'Must be a number!' })
+  toilets?: number;
 
   @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  @Matches(/^\d+$/, { message: 'Must be a number!' })
-  chairs?: string;
+  @IsNumber()
+  @IsOptional({ always: true })
+  // @Matches(/^\d+$/, { message: 'Must be a number!' })
+  chairs?: number;
 
   @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  @Matches(/^\d+$/, { message: 'Must be a number!' })
-  tables?: string;
+  @IsNumber()
+  @IsOptional({ always: true })
+  // @Matches(/^\d+$/, { message: 'Must be a number!' })
+  tables?: number;
 
   @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  @Matches(/^\d+$/, { message: 'Must be a number!' })
-  kitchens?: string;
+  @IsNumber()
+  @IsOptional({ always: true })
+  // @Matches(/^\d+$/, { message: 'Must be a number!' })
+  kitchens?: number;
 
   @ApiProperty({ enum: Wifi, required: false })
   @IsEnum(Wifi)
-  @IsOptional()
+  @IsOptional({ always: true })
   wifi?: Wifi;
 
   @ApiProperty({ enum: Environment, required: false })
   @IsEnum(Environment)
-  @IsOptional()
+  @IsOptional({ always: true })
   environment?: Environment;
-
-  @ApiProperty({
-    type: 'string',
-    format: 'binary',
-    description: 'File to be uploaded',
-    required: false,
-  })
-  @IsOptional()
-  coverImage?: Express.Multer.File;
-
-  @ApiProperty({
-    type: 'array',
-    items: {
-      type: 'string',
-      format: 'binary',
-    },
-    description: 'Files to be uploaded',
-    required: false,
-  })
-  @IsOptional()
-  images?: Express.Multer.File[];
 }

@@ -12,7 +12,7 @@ export class S3FileService {
         Key: fileName,
       })
       .promise();
-    console.log(upload);
+    return upload;
   }
 
   public async deleteFile(key: string) {

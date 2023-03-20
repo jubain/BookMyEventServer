@@ -23,6 +23,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
+  ApiProperty,
   ApiTags,
 } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
@@ -30,7 +31,7 @@ import { MulterError, diskStorage } from 'multer';
 import { extname } from 'path';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
-import { FindVenueDto, QueryParamDto } from './dto/other.dto';
+import { AddImageDto, FindVenueDto, QueryParamDto } from './dto/other.dto';
 import { CreateVenueBookingDto } from './dto/createBooking.dto';
 import { VenueGateway } from './venue.gateway';
 import { S3Service } from 'src/s3/s3.service';
@@ -71,9 +72,19 @@ export class VenueController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
-  @ApiOperation({})
-  @ApiConsumes('multipart/form-data')
   @ApiBody({ type: UpdateVenueDto })
+  update(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() updateVenueDto: UpdateVenueDto,
+  ) {
+    return this.venueService.update(req.user, +id, updateVenueDto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/image')
+  @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileFieldsInterceptor(
       [
@@ -101,10 +112,8 @@ export class VenueController {
       },
     ),
   )
-  update(
-    @Req() req: Request,
-    @Param('id') id: string,
-    @Body() updateVenueDto: CreateVenueDto,
+  addImage(
+    @Body() body: AddImageDto,
     @UploadedFiles()
     coverImage: {
       coverImage: {
@@ -118,24 +127,33 @@ export class VenueController {
         size: number;
       }[];
     },
-    // @UploadedFiles() coverImage: Express.Multer.File[],
-    @UploadedFiles() images: Express.Multer.File[],
+    @UploadedFiles()
+    images: {
+      images: {
+        fieldname: string;
+        originalname: string;
+        encoding: string;
+        mimetype: string;
+        destination: string;
+        filename: string;
+        path: string;
+        size: number;
+      }[];
+    },
   ) {
-    // if (coverImage.coverImage.length) {
-    //   console.log(coverImage.coverImage[0]);
-    // }
+    return this.venueService.addVenueImages(coverImage, images, body);
+  }
 
-    this.s3Service.addImage(
-      fs.readFileSync(coverImage.coverImage[0].path),
-      coverImage.coverImage[0].filename,
-    );
-    return 'me';
-    return this.venueService.update(req.user, +id, updateVenueDto);
+  @Delete('deleteImage/:id')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  deleteImages(@Param('id') id: string) {
+    this.venueService.deleteVenueImages(+id);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.venueService.remove(+id);
+  remove(@Param('id') id: string, @Req() req: Request) {
+    return this.venueService.remove(+id, req.user);
   }
 
   @ApiBearerAuth()
@@ -159,10 +177,14 @@ export class VenueController {
           }
         },
         storage: diskStorage({
-          destination: './uploads',
+          // destination: './uploads',
           filename: (req, file, callback) => {
             const uniqueSuffix =
-              Date.now() + '-' + Math.round(Math.random() + 1e9);
+              Date.now() +
+              '-' +
+              Math.round(Math.random() + 1e2) +
+              '-' +
+              file.originalname.split('.')[0];
             const ext = extname(file.originalname);
             const filename = `${uniqueSuffix}${ext}`;
             callback(null, filename);
@@ -173,11 +195,35 @@ export class VenueController {
   )
   create(
     @Req() req: Request,
-    @UploadedFile() coverImage: Express.Multer.File,
-    @UploadedFiles() images: Express.Multer.File,
+    @UploadedFiles()
+    coverImage: {
+      coverImage: {
+        fieldname: string;
+        originalname: string;
+        encoding: string;
+        mimetype: string;
+        destination: string;
+        filename: string;
+        path: string;
+        size: number;
+      }[];
+    },
+    @UploadedFiles()
+    images: {
+      images: {
+        fieldname: string;
+        originalname: string;
+        encoding: string;
+        mimetype: string;
+        destination: string;
+        filename: string;
+        path: string;
+        size: number;
+      }[];
+    },
     @Body() body: CreateVenueDto,
   ) {
-    return this.venueService.create(req.user, body);
+    return this.venueService.create(req.user, body, coverImage, images);
   }
 
   @ApiBearerAuth()
@@ -192,6 +238,36 @@ export class VenueController {
       .then((venue) => {
         this.venueGateway.handleSendMessage(venue);
         return venue;
+      })
+      .catch((err) => {
+        return err;
+      });
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/cancelBooking/:id')
+  async cancelBooking(@Param('id') id: string, @Req() req: Request) {
+    return await this.venueService
+      .cancelRequestBooking(+id, req.user)
+      .then((booking) => {
+        this.venueGateway.handleVenueBookingCancelMessage(booking);
+        return booking;
+      })
+      .catch((err) => {
+        return err;
+      });
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/deleteBooking/:id')
+  async deleteBooking(@Param('id') id: string, @Req() req: Request) {
+    return await this.venueService
+      .deleteBooking(+id, req.user)
+      .then((booking) => {
+        this.venueGateway.handleVenueBookingDeleteMessage(booking);
+        return booking;
       })
       .catch((err) => {
         return err;

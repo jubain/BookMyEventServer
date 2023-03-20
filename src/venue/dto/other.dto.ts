@@ -72,3 +72,36 @@ export class FindVenueDto {
   @Type(() => Coordinates)
   coordinates?: Coordinates;
 }
+
+export class AddImageDto {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  venueId: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  type: 'coverImage' | 'extraImages';
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'File to be uploaded',
+    required: false,
+  })
+  @IsOptional({ always: true })
+  coverImage?: Express.Multer.File;
+
+  @ApiProperty({
+    type: 'array',
+    items: {
+      type: 'string',
+      format: 'binary',
+    },
+    description: 'Files to be uploaded',
+    required: false,
+  })
+  @IsOptional({ always: true })
+  images?: Express.Multer.File[];
+}

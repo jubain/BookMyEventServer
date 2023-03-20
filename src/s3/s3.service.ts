@@ -7,4 +7,8 @@ export class S3Service {
   async addImage(file: Buffer, fileName: string) {
     return this.fileService.uploadFile(file, fileName);
   }
+
+  async deleteImg(key: string) {
+    return this.fileService.deleteFile(key);
+  }
 }

@@ -8,6 +8,7 @@ import {
   ConnectedSocket,
   OnGatewayInit,
 } from '@nestjs/websockets';
+import { VenueBookings } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway()
@@ -23,6 +24,22 @@ export class VenueGateway
     payload: any,
   ) {
     this.server.emit('recBookMessage', payload);
+  }
+
+  @SubscribeMessage('venueBookingCancelMessage')
+  async handleVenueBookingCancelMessage(
+    // client: Socket,
+    payload: any,
+  ) {
+    this.server.emit('recVenueBookingCancelMessage', payload);
+  }
+
+  @SubscribeMessage('venueBookingDeleteMessage')
+  async handleVenueBookingDeleteMessage(
+    // client: Socket,
+    payload: any,
+  ) {
+    this.server.emit('recVenueBookingCancelMessage', payload);
   }
 
   afterInit(server: Server) {

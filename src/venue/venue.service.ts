@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   BadRequestException,
   HttpException,
   Injectable,
@@ -9,23 +10,66 @@ import { UpdateVenueDto } from './dto/update-venue.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import { FindVenueDto, QueryParamDto } from './dto/other.dto';
+import { AddImageDto, FindVenueDto, QueryParamDto } from './dto/other.dto';
 import { CreateVenueBookingDto } from './dto/createBooking.dto';
 import { PrismaClient, Venue } from '@prisma/client';
+import { S3Service } from 'src/s3/s3.service';
+import * as fs from 'fs';
 
 @ApiTags('venue')
 @Injectable()
 export class VenueService {
   private prismaClient;
-  constructor(private prisma: PrismaService, private config: ConfigService) {
+  constructor(
+    private prisma: PrismaService,
+    private config: ConfigService,
+    private s3Service: S3Service,
+  ) {
     this.prismaClient = new PrismaClient();
   }
 
-  async create(user: any, createVenueDto: CreateVenueDto) {
+  async create(
+    user: any,
+    createVenueDto: CreateVenueDto,
+    coverImage: {
+      coverImage: {
+        fieldname: string;
+        originalname: string;
+        encoding: string;
+        mimetype: string;
+        destination: string;
+        filename: string;
+        path: string;
+        size: number;
+      }[];
+    },
+    images: {
+      images: {
+        fieldname: string;
+        originalname: string;
+        encoding: string;
+        mimetype: string;
+        destination: string;
+        filename: string;
+        path: string;
+        size: number;
+      }[];
+    },
+  ) {
     const location = await this.findGeoLocation(createVenueDto);
     const types: [] = JSON.parse(createVenueDto.type);
+    if (
+      await this.prisma.venue.findFirst({
+        where: { latitude: location.lat, longitude: location.lng },
+      })
+    )
+      return new BadGatewayException('Location already in use!');
     delete createVenueDto.type;
     try {
+      const cImage = await this.s3Service.addImage(
+        fs.readFileSync(coverImage.coverImage[0].path),
+        coverImage.coverImage[0].filename,
+      );
       const venue = await this.prisma.venue.create({
         data: {
           VenueType: {
@@ -36,8 +80,6 @@ export class VenueService {
             },
           },
           ...createVenueDto,
-          images: ['hello'],
-          coverImage: '',
           userId: user.id,
           tables: +createVenueDto.tables,
           toilets: +createVenueDto.toilets,
@@ -48,6 +90,28 @@ export class VenueService {
           longitude: location.lng,
           people: +createVenueDto.people,
         },
+      });
+      await this.prisma.venueImages.create({
+        data: {
+          key: cImage.Key,
+          type: 'coverImage',
+          url: cImage.Location,
+          venueId: venue.id,
+        },
+      });
+      images.images.forEach(async (img) => {
+        const upload = await this.s3Service.addImage(
+          fs.readFileSync(img.path),
+          img.filename,
+        );
+        await this.prisma.venueImages.create({
+          data: {
+            key: upload.Key,
+            type: 'extraImages',
+            url: upload.Location,
+            venueId: venue.id,
+          },
+        });
       });
       return venue;
     } catch (error) {
@@ -100,14 +164,32 @@ export class VenueService {
     return { venue, user };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} venue`;
+  async remove(id: number, user: any) {
+    await this.prisma.venue.delete({ where: { id: id } });
+    return 'Venue removed!';
   }
 
-  async update(user: any, id: number, updateVenueDto: CreateVenueDto) {
-    const location = await this.findGeoLocation(updateVenueDto);
-    const types: [] = JSON.parse(updateVenueDto.type);
+  async update(user: any, id: number, updateVenueDto: UpdateVenueDto) {
+    let location, types: number[];
+    if (updateVenueDto.type.length) {
+      types = [...updateVenueDto.type];
+    }
+    if (updateVenueDto.address1)
+      location = await this.findGeoLocation(updateVenueDto);
+
+    if (location) {
+      if (location.response?.message === 'Address not found!')
+        return new BadGatewayException('Address not found!');
+
+      if (
+        await this.prisma.venue.findFirst({
+          where: { latitude: location.lat, longitude: location.lng },
+        })
+      )
+        return new BadGatewayException('Location already in use!');
+    }
     delete updateVenueDto.type;
+
     if (!(await this.prisma.venue.findFirst({ where: { userId: user.id } })))
       return new UnauthorizedException('Sorry, you are not authorized!');
     try {
@@ -117,28 +199,107 @@ export class VenueService {
           VenueType: {
             deleteMany: { venueId: id },
             createMany: {
-              data: types.map((id) => {
-                return { typeId: id };
-              }),
+              data:
+                types.length > 0 &&
+                types.map((id) => {
+                  return { typeId: id };
+                }),
             },
           },
           ...updateVenueDto,
-          images: ['hello'],
-          coverImage: '',
           tables: +updateVenueDto.tables,
           toilets: +updateVenueDto.toilets,
           price: +updateVenueDto.price,
           chairs: +updateVenueDto.chairs,
           kitchens: +updateVenueDto.kitchens,
-          latitude: location.lat,
-          longitude: location.lng,
+          latitude: location?.lat,
+          longitude: location?.lng,
           people: +updateVenueDto.people,
         },
       });
+
       return venue;
     } catch (error) {
       return new BadRequestException(error);
     }
+  }
+
+  async deleteVenueImages(id: number) {
+    const venue = await this.prisma.venueImages.findFirst({
+      where: { id: id },
+    });
+    await this.prisma.venueImages.delete({
+      where: { id: id },
+    });
+    await this.s3Service.deleteImg(venue.key);
+    return 'Deleted!';
+  }
+
+  async addVenueImages(
+    coverImage: {
+      coverImage: {
+        fieldname: string;
+        originalname: string;
+        encoding: string;
+        mimetype: string;
+        destination: string;
+        filename: string;
+        path: string;
+        size: number;
+      }[];
+    },
+    images: {
+      images: {
+        fieldname: string;
+        originalname: string;
+        encoding: string;
+        mimetype: string;
+        destination: string;
+        filename: string;
+        path: string;
+        size: number;
+      }[];
+    },
+    { venueId, type }: AddImageDto,
+  ) {
+    const venue = await this.prisma.venue.findFirst({
+      where: { id: +venueId },
+      include: { VenueImages: true },
+    });
+
+    if (type === 'coverImage') {
+      const cImage = await this.s3Service.addImage(
+        fs.readFileSync(coverImage.coverImage[0].path),
+        coverImage.coverImage[0].filename,
+      );
+      await this.prisma.venueImages.create({
+        data: {
+          key: cImage.Key,
+          type: type,
+          url: cImage.Location,
+          venueId: venue.id,
+        },
+      });
+      return 'Image added!';
+    } else {
+      images.images.forEach(async (img) => {
+        if (venue.VenueImages.length === 6) return;
+        const upload = await this.s3Service.addImage(
+          fs.readFileSync(img.path),
+          img.filename,
+        );
+        await this.prisma.venueImages.create({
+          data: {
+            key: upload.Key,
+            type: type,
+            url: upload.Location,
+            venueId: venue.id,
+          },
+        });
+        return 'Image added!';
+      });
+    }
+    return new BadRequestException('No more than 6 images!');
   }
 
   filter(filterDto: QueryParamDto, venues: Venue[]) {
@@ -172,6 +333,8 @@ export class VenueService {
     );
     if (geoCoding.ok) {
       const response = await geoCoding.json();
+      if (!response.results.length)
+        return new BadRequestException('Address not found!');
       const { location } = response.results[0].geometry;
       return location;
     }
@@ -230,5 +393,37 @@ export class VenueService {
     });
     // this.venueGateway.handleSendMessage(venueBooking);
     return venueBooking;
+  }
+
+  async cancelRequestBooking(id: number, user: any) {
+    if (
+      !(await this.prisma.venueBookings.findFirst({
+        where: { id: id, userId: user.id },
+      }))
+    )
+      return new UnauthorizedException('Sorry, you are not authorized!');
+
+    return await this.prisma.venueBookings.update({
+      where: { id: id },
+      data: { requestCancel: true },
+      include: { Venue: { select: { userId: true } } },
+    });
+  }
+
+  async deleteBooking(id: number, user: any) {
+    const booking = await this.prisma.venueBookings.findFirst({
+      where: { id: id },
+      include: { Venue: true },
+    });
+    if (booking.requestCancel) {
+      if (booking.Venue.userId === user.id) {
+        await this.prisma.venueBookings.delete({
+          where: { id: id },
+          include: { Venue: true },
+        });
+        return booking;
+      }
+    }
+    return new UnauthorizedException('You are not the owner of the venue!');
   }
 }
