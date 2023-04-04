@@ -12,8 +12,6 @@ import {
   Req,
   Query,
   Render,
-  UploadedFile,
-  BadRequestException,
 } from '@nestjs/common';
 import { VenueService } from './venue.service';
 import { CreateVenueDto } from './dto/create-venue.dto';
@@ -23,7 +21,6 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
-  ApiProperty,
   ApiTags,
 } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
@@ -34,8 +31,6 @@ import { Request } from 'express';
 import { AddImageDto, FindVenueDto, QueryParamDto } from './dto/other.dto';
 import { CreateVenueBookingDto } from './dto/createBooking.dto';
 import { VenueGateway } from './venue.gateway';
-import { S3Service } from 'src/s3/s3.service';
-import * as fs from 'fs';
 
 @Controller('venue')
 @ApiTags('venue')
@@ -43,7 +38,6 @@ export class VenueController {
   constructor(
     private readonly venueService: VenueService,
     private venueGateway: VenueGateway,
-    private s3Service: S3Service,
   ) {}
 
   @Get('index')

@@ -1,7 +1,6 @@
 import {
   BadGatewayException,
   BadRequestException,
-  HttpException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -12,21 +11,18 @@ import { ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { AddImageDto, FindVenueDto, QueryParamDto } from './dto/other.dto';
 import { CreateVenueBookingDto } from './dto/createBooking.dto';
-import { PrismaClient, Venue } from '@prisma/client';
+import { Venue } from '@prisma/client';
 import { S3Service } from 'src/s3/s3.service';
 import * as fs from 'fs';
 
 @ApiTags('venue')
 @Injectable()
 export class VenueService {
-  private prismaClient;
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
     private s3Service: S3Service,
-  ) {
-    this.prismaClient = new PrismaClient();
-  }
+  ) {}
 
   async create(
     user: any,

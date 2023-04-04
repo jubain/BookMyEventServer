@@ -23,6 +23,6 @@ export class S3FileService {
         Key: key,
       })
       .promise();
-    console.log(deUpload);
+    return deUpload;
   }
 }

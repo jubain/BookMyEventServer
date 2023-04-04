@@ -5,7 +5,18 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
-  getMe(user: any) {
+  async getMe(user: any) {
+    await this.prisma.user.findUnique({
+      where: { email: user.email },
+      include: {
+        events: true,
+        venues: true,
+        VenueBookings: true,
+        EventBooking: true,
+        SavedVenue: true,
+        SavedEvent: true,
+      },
+    });
     return {
       email: user.email,
       name: user.name,
