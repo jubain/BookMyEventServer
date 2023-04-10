@@ -422,4 +422,8 @@ export class VenueService {
     }
     return new UnauthorizedException('You are not the owner of the venue!');
   }
+
+  async findImages() {
+    return await this.prisma.venueImages.findMany();
+  }
 }

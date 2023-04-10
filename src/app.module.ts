@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { VenueModule } from './venue/venue.module';
 import { S3Module } from './s3/s3.module';
 import { EventModule } from './event/event.module';
+import { ExtraModule } from './extra/extra.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { EventModule } from './event/event.module';
     VenueModule,
     S3Module,
     EventModule,
+    ExtraModule,
   ],
   controllers: [AppController],
   providers: [AppService],

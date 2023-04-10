@@ -58,6 +58,11 @@ export class VenueController {
     return this.venueService.findAllPublic(filterDto, body);
   }
 
+  @Get('images')
+  findImages() {
+    return this.venueService.findImages();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.venueService.findOne(+id);

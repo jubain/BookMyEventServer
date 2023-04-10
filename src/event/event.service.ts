@@ -170,6 +170,17 @@ export class EventService {
     return 'Event Deleted!';
   }
 
+  async removeImage(user: any, id: number) {
+    const eventImage = await this.prisma.eventImages.findFirst({
+      where: { id: id, Event: { userId: user.id } },
+    });
+    if (eventImage) {
+      this.s3Service.deleteImg(eventImage.key);
+      return 'Image Removed!';
+    }
+    return new UnauthorizedException('Unauthorized!');
+  }
+
   filter(filterDto: QueryParamDto, events: Event[]) {
     const keys = Object.keys(filterDto);
     const filteredKey = keys.filter((key) => key !== 'price');

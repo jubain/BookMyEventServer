@@ -125,4 +125,11 @@ export class EventController {
   remove(@Req() req: Request, @Param('id') id: string) {
     return this.eventService.remove(req.user, +id);
   }
+
+  @Delete('/image/:id')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  removeImage(@Req() req: Request, @Param('id') id: string) {
+    return this.eventService.removeImage(req.user, +id);
+  }
 }

@@ -13,30 +13,30 @@ async function main() {
   //     role: 'CUSTOMER',
   //   },
   // });
-  // const Type = await prisma.type.createMany({
-  //   data: [
-  //     { name: 'ANY' },
-  //     { name: 'CLUB' },
-  //     { name: 'CONVENTION' },
-  //     { name: 'CORPORATE' },
-  //     { name: 'FASHION' },
-  //     { name: 'FESTIVAL' },
-  //     { name: 'NETWORKING' },
-  //     { name: 'SOCIAL' },
-  //     { name: 'WEDDING' },
-  //   ],
-  // });
-  // const EventType = await prisma.typeEvent.createMany({
-  //   data: [
-  //     { name: 'SPORTS' },
-  //     { name: 'CHILDREN' },
-  //     { name: 'ADULT' },
-  //     { name: 'CARS' },
-  //     { name: 'MOTOBIKE' },
-  //     { name: 'GAME' },
-  //     { name: 'TECHNOLOGY' },
-  //   ],
-  // });
+  const Type = await prisma.type.createMany({
+    data: [
+      { name: 'ANY' },
+      { name: 'CLUB' },
+      { name: 'CONVENTION' },
+      { name: 'CORPORATE' },
+      { name: 'FASHION' },
+      { name: 'FESTIVAL' },
+      { name: 'NETWORKING' },
+      { name: 'SOCIAL' },
+      { name: 'WEDDING' },
+    ],
+  });
+  const EventType = await prisma.typeEvent.createMany({
+    data: [
+      { name: 'SPORTS' },
+      { name: 'CHILDREN' },
+      { name: 'ADULT' },
+      { name: 'CARS' },
+      { name: 'MOTOBIKE' },
+      { name: 'GAME' },
+      { name: 'TECHNOLOGY' },
+    ],
+  });
 }
 main()
   .then(async () => {
