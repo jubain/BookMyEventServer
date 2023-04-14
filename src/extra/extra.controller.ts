@@ -25,8 +25,8 @@ export class ExtraController {
   }
 
   @Get('/venueTypes')
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
+  // @ApiBearerAuth()
+  // @UseGuards(AuthGuard('jwt'))
   findAllVenueTypes() {
     return this.extraService.findAllVenueTypes();
   }

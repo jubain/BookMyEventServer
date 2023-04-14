@@ -9,6 +9,7 @@ import { VenueModule } from './venue/venue.module';
 import { S3Module } from './s3/s3.module';
 import { EventModule } from './event/event.module';
 import { ExtraModule } from './extra/extra.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ExtraModule } from './extra/extra.module';
     S3Module,
     EventModule,
     ExtraModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

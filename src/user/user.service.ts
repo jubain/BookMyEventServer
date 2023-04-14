@@ -1,28 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import { EditDto } from './dtos/Edit.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private authService: AuthService,
+  ) {}
   async getMe(user: any) {
-    await this.prisma.user.findUnique({
+    const token = await this.authService.signToken(
+      user.id,
+      user.email,
+      'login',
+    );
+    const me = await this.prisma.user.findUnique({
       where: { email: user.email },
       include: {
         events: true,
-        venues: true,
-        VenueBookings: true,
-        EventBooking: true,
+        venues: {
+          include: {
+            VenueImages: true,
+            VenueType: { select: { typeId: true } },
+          },
+        },
+        VenueBookings: { include: { Venue: true } },
+        EventBooking: { include: { Event: { include: { Venue: true } } } },
         SavedVenue: true,
         SavedEvent: true,
       },
     });
-    return {
-      email: user.email,
-      name: user.name,
-      phone: `${user.phone}`,
-      createdAt: user.createdAt,
-    };
+    delete me.password;
+    const phoneString = me.phone;
+    delete me.phone;
+    return { ...me, phone: '' + phoneString, token };
   }
   async editMe(user: any, body: EditDto) {
     const updatedUser = await this.prisma.user.update({

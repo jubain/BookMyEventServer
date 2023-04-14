@@ -14,6 +14,7 @@ import { CreateVenueBookingDto } from './dto/createBooking.dto';
 import { Venue } from '@prisma/client';
 import { S3Service } from 'src/s3/s3.service';
 import * as fs from 'fs';
+import * as moment from 'moment';
 
 @ApiTags('venue')
 @Injectable()
@@ -145,10 +146,13 @@ export class VenueService {
       include: {
         VenueBookings: true,
         VenueReview: {
-          select: { review: true, User: { select: { name: true, id: true } } },
+          include: {
+            User: { select: { name: true, id: true } },
+          },
         },
         VenueType: { select: { Type: true } },
         User: true,
+        VenueImages: true,
       },
     });
     const user = {
@@ -176,10 +180,13 @@ export class VenueService {
     if (location) {
       if (location.response?.message === 'Address not found!')
         return new BadGatewayException('Address not found!');
-
+      const venue = await this.prisma.venue.findUnique({ where: { id: id } });
+      // if (venue.latitude !== location.lat && venue.longitude !== location.lng) {
+      // }
       if (
         await this.prisma.venue.findFirst({
           where: { latitude: location.lat, longitude: location.lng },
+          // skip: id,
         })
       )
         return new BadGatewayException('Location already in use!');
@@ -258,6 +265,8 @@ export class VenueService {
     },
     { venueId, type }: AddImageDto,
   ) {
+    console.log(coverImage);
+    return;
     const venue = await this.prisma.venue.findFirst({
       where: { id: +venueId },
       include: { VenueImages: true },
@@ -357,26 +366,37 @@ export class VenueService {
       },
     });
     if (body.endDate < body.startDate)
-      throw new BadRequestException('End date should be after the start date!');
+      return new BadRequestException(
+        'End date should be after the start date!',
+      );
 
     if (existingBookings.length) {
       const bookingExist = existingBookings.find(
         (booking) =>
-          body.startDate >= booking.startDate &&
-          body.endDate <= booking.endDate,
+          (body.startDate >= booking.startDate &&
+            body.endDate <= booking.endDate) ||
+          body.startDate == booking.startDate,
       );
       if (bookingExist)
-        throw new BadRequestException(
+        return new BadRequestException(
           `Sorry, there is alread a booking between ${bookingExist.startDate} till ${bookingExist.endDate}`,
         );
     }
 
+    // Total days to book for
+    const diff = moment.duration(
+      moment(body.endDate).diff(moment(body.startDate)),
+    );
+    const venue = await this.prisma.venue.findUnique({
+      where: { id: body.venueId },
+    });
     const venueBooking = await this.prisma.venueBookings.create({
       data: {
         userId: user.id,
         venueId: body.venueId,
         startDate: body.startDate,
         endDate: body.endDate,
+        price: diff.days() * venue.price,
       },
       include: {
         Venue: {
@@ -387,7 +407,6 @@ export class VenueService {
         },
       },
     });
-    // this.venueGateway.handleSendMessage(venueBooking);
     return venueBooking;
   }
 

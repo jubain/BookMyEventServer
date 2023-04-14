@@ -200,6 +200,7 @@ model VenueBookings {
   venueId       Int
   startDate     DateTime
   endDate       DateTime
+  price         Float    @default(50)
   requestCancel Boolean  @default(false)
 }
 
