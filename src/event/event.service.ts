@@ -126,6 +126,7 @@ export class EventService {
         EventReview: true,
         Venue: true,
         User: true,
+        EventType: { include: { TypeEvent: true } },
       },
     });
     delete event.User.phone;

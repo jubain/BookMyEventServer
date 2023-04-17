@@ -7,9 +7,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  Matches,
 } from 'class-validator';
-import { CreateVenueDto, Environment, Wifi } from './create-venue.dto';
+import { Environment, Wifi } from './create-venue.dto';
 
 export class UpdateVenueDto {
   @ApiProperty({ type: 'string', required: false })
@@ -23,10 +22,10 @@ export class UpdateVenueDto {
   @IsNotEmpty()
   description?: string;
 
-  @ApiProperty({ required: false })
-  @IsArray()
+  @ApiProperty()
+  @IsString()
   @IsNotEmpty()
-  type?: number[];
+  type?: string;
 
   @ApiProperty({ required: false })
   @IsNumber()

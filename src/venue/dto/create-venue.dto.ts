@@ -2,9 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
-  Matches,
 } from 'class-validator';
 
 export enum Environment {
@@ -34,9 +34,8 @@ export class CreateVenueDto {
   type: string;
 
   @ApiProperty()
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  @Matches(/^\d+$/, { message: 'Must be a number!' })
   price: number;
 
   @ApiProperty()
@@ -69,29 +68,24 @@ export class CreateVenueDto {
   @IsOptional()
   website?: string;
 
-  @ApiProperty({ type: 'number' })
-  @IsString()
-  @Matches(/^\d+$/, { message: 'Must be a number!' })
+  @ApiProperty()
+  @IsNumber()
   people: number;
 
-  @ApiProperty({ type: 'number' })
-  @IsString()
-  @Matches(/^\d+$/, { message: 'Must be a number!' })
+  @ApiProperty()
+  @IsNumber()
   toilets: number;
 
   @ApiProperty()
-  @IsString()
-  @Matches(/^\d+$/, { message: 'Must be a number!' })
+  @IsNumber()
   chairs: number;
 
   @ApiProperty()
-  @IsString()
-  @Matches(/^\d+$/, { message: 'Must be a number!' })
+  @IsNumber()
   tables: number;
 
   @ApiProperty()
-  @IsString()
-  @Matches(/^\d+$/, { message: 'Must be a number!' })
+  @IsNumber()
   kitchens: number;
 
   @ApiProperty({ enum: Wifi })
@@ -102,20 +96,20 @@ export class CreateVenueDto {
   @IsEnum(Environment)
   environment: Environment;
 
-  @ApiProperty({
-    type: 'string',
-    format: 'binary',
-    description: 'File to be uploaded',
-  })
-  coverImage: Express.Multer.File;
+  // @ApiProperty({
+  //   type: 'string',
+  //   format: 'binary',
+  //   description: 'File to be uploaded',
+  // })
+  // coverImage: Express.Multer.File;
 
-  @ApiProperty({
-    type: 'array',
-    items: {
-      type: 'string',
-      format: 'binary',
-    },
-    description: 'Files to be uploaded',
-  })
-  images: Express.Multer.File[];
+  // @ApiProperty({
+  //   type: 'array',
+  //   items: {
+  //     type: 'string',
+  //     format: 'binary',
+  //   },
+  //   description: 'Files to be uploaded',
+  // })
+  // images: Express.Multer.File[];
 }

@@ -25,36 +25,10 @@ export class VenueService {
     private s3Service: S3Service,
   ) {}
 
-  async create(
-    user: any,
-    createVenueDto: CreateVenueDto,
-    coverImage: {
-      coverImage: {
-        fieldname: string;
-        originalname: string;
-        encoding: string;
-        mimetype: string;
-        destination: string;
-        filename: string;
-        path: string;
-        size: number;
-      }[];
-    },
-    images: {
-      images: {
-        fieldname: string;
-        originalname: string;
-        encoding: string;
-        mimetype: string;
-        destination: string;
-        filename: string;
-        path: string;
-        size: number;
-      }[];
-    },
-  ) {
+  async create(user: any, createVenueDto: CreateVenueDto) {
     const location = await this.findGeoLocation(createVenueDto);
     const types: [] = JSON.parse(createVenueDto.type);
+
     if (
       await this.prisma.venue.findFirst({
         where: { latitude: location.lat, longitude: location.lng },
@@ -63,10 +37,10 @@ export class VenueService {
       return new BadGatewayException('Location already in use!');
     delete createVenueDto.type;
     try {
-      const cImage = await this.s3Service.addImage(
-        fs.readFileSync(coverImage.coverImage[0].path),
-        coverImage.coverImage[0].filename,
-      );
+      // const cImage = await this.s3Service.addImage(
+      //   fs.readFileSync(coverImage.coverImage[0].path),
+      //   coverImage.coverImage[0].filename,
+      // );
       const venue = await this.prisma.venue.create({
         data: {
           VenueType: {
@@ -88,29 +62,29 @@ export class VenueService {
           people: +createVenueDto.people,
         },
       });
-      await this.prisma.venueImages.create({
-        data: {
-          key: cImage.Key,
-          type: 'coverImage',
-          url: cImage.Location,
-          venueId: venue.id,
-        },
-      });
-      images.images.forEach(async (img) => {
-        const upload = await this.s3Service.addImage(
-          fs.readFileSync(img.path),
-          img.filename,
-        );
-        await this.prisma.venueImages.create({
-          data: {
-            key: upload.Key,
-            type: 'extraImages',
-            url: upload.Location,
-            venueId: venue.id,
-          },
-        });
-      });
-      return venue;
+      return { status: 200, data: venue };
+      // await this.prisma.venueImages.create({
+      //   data: {
+      //     key: cImage.Key,
+      //     type: 'coverImage',
+      //     url: cImage.Location,
+      //     venueId: venue.id,
+      //   },
+      // });
+      // images.images.forEach(async (img) => {
+      //   const upload = await this.s3Service.addImage(
+      //     fs.readFileSync(img.path),
+      //     img.filename,
+      //   );
+      //   await this.prisma.venueImages.create({
+      //     data: {
+      //       key: upload.Key,
+      //       type: 'extraImages',
+      //       url: upload.Location,
+      //       venueId: venue.id,
+      //     },
+      //   });
+      // });
     } catch (error) {
       return new BadRequestException(error);
     }
@@ -170,10 +144,11 @@ export class VenueService {
   }
 
   async update(user: any, id: number, updateVenueDto: UpdateVenueDto) {
-    let location, types: number[];
-    if (updateVenueDto.type.length) {
-      types = [...updateVenueDto.type];
-    }
+    let location;
+    // if (updateVenueDto.type.length) {
+    //   types = [...updateVenueDto.type];
+    // }
+    console.log(updateVenueDto);
     if (updateVenueDto.address1)
       location = await this.findGeoLocation(updateVenueDto);
 
@@ -186,27 +161,26 @@ export class VenueService {
       if (
         await this.prisma.venue.findFirst({
           where: { latitude: location.lat, longitude: location.lng },
-          // skip: id,
+          skip: id,
         })
       )
         return new BadGatewayException('Location already in use!');
     }
-    delete updateVenueDto.type;
 
     if (!(await this.prisma.venue.findFirst({ where: { userId: user.id } })))
       return new UnauthorizedException('Sorry, you are not authorized!');
     try {
+      const types: [] = JSON.parse(updateVenueDto.type);
+      delete updateVenueDto.type;
       const venue = await this.prisma.venue.update({
         where: { id: id },
         data: {
           VenueType: {
             deleteMany: { venueId: id },
             createMany: {
-              data:
-                types.length > 0 &&
-                types.map((id) => {
-                  return { typeId: id };
-                }),
+              data: types.map((id) => {
+                return { typeId: id };
+              }),
             },
           },
           ...updateVenueDto,
@@ -339,7 +313,7 @@ export class VenueService {
     if (geoCoding.ok) {
       const response = await geoCoding.json();
       if (!response.results.length)
-        return new BadRequestException('Address not found!');
+        throw new BadRequestException('Address not found!');
       const { location } = response.results[0].geometry;
       return location;
     }

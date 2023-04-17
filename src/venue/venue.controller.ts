@@ -71,7 +71,6 @@ export class VenueController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
-  @ApiBody({ type: UpdateVenueDto })
   update(
     @Req() req: Request,
     @Param('id') id: string,
@@ -98,16 +97,16 @@ export class VenueController {
             cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
           }
         },
-        storage: diskStorage({
-          // destination: './uploads',
-          filename: (req, file, callback) => {
-            const uniqueSuffix =
-              Date.now() + '-' + Math.round(Math.random() + 1e9);
-            const ext = extname(file.originalname);
-            const filename = `${uniqueSuffix}${ext}`;
-            callback(null, filename);
-          },
-        }),
+        // storage: diskStorage({
+        //   // destination: './uploads',
+        //   filename: (req, file, callback) => {
+        //     const uniqueSuffix =
+        //       Date.now() + '-' + Math.round(Math.random() + 1e9);
+        //     const ext = extname(file.originalname);
+        //     const filename = `${uniqueSuffix}${ext}`;
+        //     callback(null, filename);
+        //   },
+        // }),
       },
     ),
   )
@@ -140,6 +139,7 @@ export class VenueController {
       }[];
     },
   ) {
+    return coverImage;
     return this.venueService.addVenueImages(coverImage, images, body);
   }
 
@@ -159,70 +159,70 @@ export class VenueController {
   @UseGuards(AuthGuard('jwt'))
   @Post()
   @ApiOperation({})
-  @ApiConsumes('multipart/form-data')
+  // @ApiConsumes('multipart/form-data')
   @ApiBody({ type: CreateVenueDto })
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'coverImage', maxCount: 1 },
-        { name: 'images', maxCount: 5 },
-      ],
-      {
-        fileFilter: (req, file, cb) => {
-          if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/))
-            cb(null, true);
-          else {
-            cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
-          }
-        },
-        storage: diskStorage({
-          // destination: './uploads',
-          filename: (req, file, callback) => {
-            const uniqueSuffix =
-              Date.now() +
-              '-' +
-              Math.round(Math.random() + 1e2) +
-              '-' +
-              file.originalname.split('.')[0];
-            const ext = extname(file.originalname);
-            const filename = `${uniqueSuffix}${ext}`;
-            callback(null, filename);
-          },
-        }),
-      },
-    ),
-  )
+  // @UseInterceptors(
+  //   FileFieldsInterceptor(
+  //     [
+  //       { name: 'coverImage', maxCount: 1 },
+  //       { name: 'images', maxCount: 5 },
+  //     ],
+  //     {
+  //       fileFilter: (req, file, cb) => {
+  //         if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/))
+  //           cb(null, true);
+  //         else {
+  //           cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
+  //         }
+  //       },
+  //       storage: diskStorage({
+  //         // destination: './uploads',
+  //         filename: (req, file, callback) => {
+  //           const uniqueSuffix =
+  //             Date.now() +
+  //             '-' +
+  //             Math.round(Math.random() + 1e2) +
+  //             '-' +
+  //             file.originalname.split('.')[0];
+  //           const ext = extname(file.originalname);
+  //           const filename = `${uniqueSuffix}${ext}`;
+  //           callback(null, filename);
+  //         },
+  //       }),
+  //     },
+  //   ),
+  // )
   create(
     @Req() req: Request,
-    @UploadedFiles()
-    coverImage: {
-      coverImage: {
-        fieldname: string;
-        originalname: string;
-        encoding: string;
-        mimetype: string;
-        destination: string;
-        filename: string;
-        path: string;
-        size: number;
-      }[];
-    },
-    @UploadedFiles()
-    images: {
-      images: {
-        fieldname: string;
-        originalname: string;
-        encoding: string;
-        mimetype: string;
-        destination: string;
-        filename: string;
-        path: string;
-        size: number;
-      }[];
-    },
+    // @UploadedFiles()
+    // coverImage: {
+    //   coverImage: {
+    //     fieldname: string;
+    //     originalname: string;
+    //     encoding: string;
+    //     mimetype: string;
+    //     destination: string;
+    //     filename: string;
+    //     path: string;
+    //     size: number;
+    //   }[];
+    // },
+    // @UploadedFiles()
+    // images: {
+    //   images: {
+    //     fieldname: string;
+    //     originalname: string;
+    //     encoding: string;
+    //     mimetype: string;
+    //     destination: string;
+    //     filename: string;
+    //     path: string;
+    //     size: number;
+    //   }[];
+    // },
     @Body() body: CreateVenueDto,
   ) {
-    return this.venueService.create(req.user, body, coverImage, images);
+    return this.venueService.create(req.user, body);
   }
 
   @ApiBearerAuth()

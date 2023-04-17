@@ -18,7 +18,12 @@ export class UserService {
     const me = await this.prisma.user.findUnique({
       where: { email: user.email },
       include: {
-        events: true,
+        events: {
+          include: {
+            eventsImages: true,
+            EventType: { select: { eventId: true } },
+          },
+        },
         venues: {
           include: {
             VenueImages: true,
