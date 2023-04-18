@@ -13,8 +13,8 @@ export class ExtraService {
   async findAllVenueTypes() {
     return await this.prisma.type.findMany();
   }
-  findAllEventTypes() {
-    return `This action returns all extra`;
+  async findAllEventTypes() {
+    return await this.prisma.typeEvent.findMany();
   }
 
   findOne(id: number) {

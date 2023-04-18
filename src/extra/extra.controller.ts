@@ -32,8 +32,6 @@ export class ExtraController {
   }
 
   @Get('/eventTypes')
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
   findAllEventTypes() {
     return this.extraService.findAllEventTypes();
   }
