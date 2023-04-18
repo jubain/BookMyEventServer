@@ -6,9 +6,8 @@ import {
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { QueryParamDto } from './dto/others.dto';
+import { AddImageDto, QueryParamDto } from './dto/others.dto';
 import { Event } from '@prisma/client';
-import { AddImageDto } from 'src/venue/dto/other.dto';
 import { S3Service } from 'src/s3/s3.service';
 import * as fs from 'fs';
 
@@ -36,30 +35,7 @@ export class EventService {
   }
 
   async addEventImages(
-    coverImage: {
-      coverImage: {
-        fieldname: string;
-        originalname: string;
-        encoding: string;
-        mimetype: string;
-        destination: string;
-        filename: string;
-        path: string;
-        size: number;
-      }[];
-    },
-    images: {
-      images: {
-        fieldname: string;
-        originalname: string;
-        encoding: string;
-        mimetype: string;
-        destination: string;
-        filename: string;
-        path: string;
-        size: number;
-      }[];
-    },
+    image: Express.Multer.File,
     { venueId, type }: AddImageDto,
   ) {
     const event = await this.prisma.event.findFirst({
@@ -69,35 +45,20 @@ export class EventService {
 
     if (type === 'coverImage') {
       const cImage = await this.s3Service.addImage(
-        fs.readFileSync(coverImage.coverImage[0].path),
-        coverImage.coverImage[0].filename,
+        fs.readFileSync(image.path),
+        image.filename,
       );
-      await this.prisma.eventImages.create({
-        data: {
-          key: cImage.Key,
-          type: type,
-          url: cImage.Location,
-          eventId: event.id,
-        },
-      });
-      return 'Image added!';
-    } else {
-      images.images.forEach(async (img) => {
-        if (event.eventsImages.length === 6) return;
-        const upload = await this.s3Service.addImage(
-          fs.readFileSync(img.path),
-          img.filename,
-        );
+      if (event) {
         await this.prisma.eventImages.create({
           data: {
-            key: upload.Key,
+            key: cImage.Key,
             type: type,
-            url: upload.Location,
+            url: cImage.Location,
             eventId: event.id,
           },
         });
-        return event;
-      });
+        return 'Image added!';
+      }
     }
     return new BadRequestException('No more than 6 images!');
   }

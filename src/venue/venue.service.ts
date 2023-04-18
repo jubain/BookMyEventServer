@@ -148,7 +148,6 @@ export class VenueService {
     // if (updateVenueDto.type.length) {
     //   types = [...updateVenueDto.type];
     // }
-    console.log(updateVenueDto);
     if (updateVenueDto.address1)
       location = await this.findGeoLocation(updateVenueDto);
 
@@ -239,8 +238,6 @@ export class VenueService {
     },
     { venueId, type }: AddImageDto,
   ) {
-    console.log(coverImage);
-    return;
     const venue = await this.prisma.venue.findFirst({
       where: { id: +venueId },
       include: { VenueImages: true },

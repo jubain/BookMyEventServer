@@ -11,18 +11,21 @@ import {
   Query,
   UseInterceptors,
   UploadedFiles,
+  UploadedFile,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
-import { QueryParamDto } from './dto/others.dto';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { AddImageDto, QueryParamDto } from './dto/others.dto';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from '@nestjs/platform-express';
 import { MulterError, diskStorage } from 'multer';
 import { extname } from 'path';
-import { AddImageDto } from 'src/venue/dto/other.dto';
 
 @ApiTags('events')
 @Controller('event')
@@ -41,62 +44,31 @@ export class EventController {
   @ApiConsumes('multipart/form-data')
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'coverImage', maxCount: 1 },
-        { name: 'images', maxCount: 5 },
-      ],
-      {
-        fileFilter: (req, file, cb) => {
-          if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/))
-            cb(null, true);
-          else {
-            cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
-          }
-        },
-        storage: diskStorage({
-          // destination: './uploads',
-          filename: (req, file, callback) => {
-            const uniqueSuffix =
-              Date.now() + '-' + Math.round(Math.random() + 1e9);
-            const ext = extname(file.originalname);
-            const filename = `${uniqueSuffix}${ext}`;
-            callback(null, filename);
-          },
-        }),
+    FileInterceptor('image', {
+      fileFilter: (req, file, cb) => {
+        if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/))
+          cb(null, true);
+        else {
+          cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
+        }
       },
-    ),
+      storage: diskStorage({
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() + 1e9);
+          const ext = extname(file.originalname);
+          const filename = `${uniqueSuffix}${ext}`;
+          callback(null, filename);
+        },
+      }),
+    }),
   )
   addImage(
     @Body() body: AddImageDto,
-    @UploadedFiles()
-    coverImage: {
-      coverImage: {
-        fieldname: string;
-        originalname: string;
-        encoding: string;
-        mimetype: string;
-        destination: string;
-        filename: string;
-        path: string;
-        size: number;
-      }[];
-    },
-    @UploadedFiles()
-    images: {
-      images: {
-        fieldname: string;
-        originalname: string;
-        encoding: string;
-        mimetype: string;
-        destination: string;
-        filename: string;
-        path: string;
-        size: number;
-      }[];
-    },
+    @UploadedFile()
+    image: Express.Multer.File,
   ) {
-    return this.eventService.addEventImages(coverImage, images, body);
+    return this.eventService.addEventImages(image, body);
   }
   @Get()
   findAll(@Query() filterDto: QueryParamDto) {

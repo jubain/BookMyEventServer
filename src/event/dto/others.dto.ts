@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Cities } from 'src/venue/dto/cities';
 
 enum Price {
@@ -42,4 +42,29 @@ export class QueryParamDto {
   @IsOptional()
   @IsEnum(Price)
   price?: Price;
+}
+
+export class AddImageDto {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  venueId: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  type: 'coverImage' | 'extraImages';
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    items: {
+      type: 'string',
+      format: 'binary',
+    },
+    description: 'File to be uploaded',
+    required: false,
+  })
+  @IsOptional({ always: true })
+  image?: Express.Multer.File;
 }

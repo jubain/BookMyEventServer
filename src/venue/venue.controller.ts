@@ -139,7 +139,6 @@ export class VenueController {
       }[];
     },
   ) {
-    return coverImage;
     return this.venueService.addVenueImages(coverImage, images, body);
   }
 
