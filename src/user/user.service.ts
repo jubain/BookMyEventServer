@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { BadGatewayException, Injectable } from '@nestjs/common';
 import { EditDto } from './dtos/Edit.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthService } from 'src/auth/auth.service';
+import { S3Service } from 'src/s3/s3.service';
+import * as fs from 'fs';
 
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
     private authService: AuthService,
+    private s3Service: S3Service,
   ) {}
   async getMe(user: any) {
     const token = await this.authService.signToken(
@@ -44,11 +47,17 @@ export class UserService {
   async editMe(user: any, body: EditDto) {
     const updatedUser = await this.prisma.user.update({
       where: { email: user.email },
-      data: {
-        ...body,
-      },
+      data: body.password
+        ? {
+            ...body,
+          }
+        : {
+            name: body.name,
+            phone: body.phone,
+          },
     });
     delete updatedUser.password;
+    delete updatedUser.phone;
     return updatedUser;
   }
 
@@ -77,5 +86,31 @@ export class UserService {
         events: { include: { Venue: true } },
       },
     });
+  }
+
+  async addUserImages(user: any, image: Express.Multer.File) {
+    try {
+      const userFound = await this.prisma.user.findUnique({
+        where: { id: user.id },
+      });
+      if (userFound.imageKey) {
+        await this.s3Service.deleteImg(userFound.imageKey);
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { image: null, imageKey: null },
+        });
+      }
+      const cImage = await this.s3Service.addImage(
+        fs.readFileSync(image.path),
+        image.filename,
+      );
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { image: cImage.Location, imageKey: cImage.Key },
+      });
+      return 'Image uploaded';
+    } catch (error) {
+      return new BadGatewayException(error);
+    }
   }
 }

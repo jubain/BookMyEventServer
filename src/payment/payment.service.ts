@@ -15,8 +15,9 @@ export class PaymentService {
   async createPayment(body: CreatePaymentDto) {
     let amount: number;
     if (body.type === 'event') {
-      amount = (await this.prisma.event.findUnique({ where: { id: body.id } }))
-        .price;
+      amount =
+        (await this.prisma.event.findUnique({ where: { id: body.id } })).price *
+        body.tickets;
     } else {
       amount = (await this.prisma.venue.findUnique({ where: { id: body.id } }))
         .price;

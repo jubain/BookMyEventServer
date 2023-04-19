@@ -10,22 +10,19 @@ import {
   Req,
   Query,
   UseInterceptors,
-  UploadedFiles,
   UploadedFile,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { AddImageDto, QueryParamDto } from './dto/others.dto';
-import {
-  FileFieldsInterceptor,
-  FileInterceptor,
-} from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { MulterError, diskStorage } from 'multer';
 import { extname } from 'path';
+import { CreateEventBookingDto } from './dto/create-booking.dto';
 
 @ApiTags('events')
 @Controller('event')
@@ -103,5 +100,12 @@ export class EventController {
   @UseGuards(AuthGuard('jwt'))
   removeImage(@Req() req: Request, @Param('id') id: string) {
     return this.eventService.removeImage(req.user, +id);
+  }
+
+  @Post('/booking')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  createBooking(@Req() req: Request, @Body() body: CreateEventBookingDto) {
+    return this.eventService.createBooking(req.user, body);
   }
 }

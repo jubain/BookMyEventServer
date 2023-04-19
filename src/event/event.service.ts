@@ -10,6 +10,7 @@ import { AddImageDto, QueryParamDto } from './dto/others.dto';
 import { Event } from '@prisma/client';
 import { S3Service } from 'src/s3/s3.service';
 import * as fs from 'fs';
+import { CreateEventBookingDto } from './dto/create-booking.dto';
 
 @Injectable()
 export class EventService {
@@ -137,7 +138,7 @@ export class EventService {
       where: { id: id, Event: { userId: user.id } },
     });
     if (eventImage) {
-      this.s3Service.deleteImg(eventImage.key);
+      await this.s3Service.deleteImg(eventImage.key);
       return 'Image Removed!';
     }
     return new UnauthorizedException('Unauthorized!');
@@ -161,5 +162,22 @@ export class EventService {
       return filteredVenue.sort((a, b) => b.price - a.price);
     }
     return filteredVenue;
+  }
+
+  // Bookings
+  async createBooking(user: any, body: CreateEventBookingDto) {
+    const eventFound = await this.prisma.event.findUnique({
+      where: { id: body.eventId },
+    });
+
+    const booking = await this.prisma.eventBooking.create({
+      data: {
+        eventId: body.eventId,
+        tickets: body.tickets,
+        price: eventFound.price * body.tickets,
+        userId: user.id,
+      },
+    });
+    return booking;
   }
 }

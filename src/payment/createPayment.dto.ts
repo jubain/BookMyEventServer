@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
 enum PaymentType {
   event = 'event',
@@ -15,4 +15,9 @@ export class CreatePaymentDto {
   @ApiProperty({ enum: PaymentType })
   @IsEnum(PaymentType)
   type: PaymentType;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsOptional()
+  tickets?: number;
 }

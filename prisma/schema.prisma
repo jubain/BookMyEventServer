@@ -65,6 +65,8 @@ model User {
   role          Role            @default(CUSTOMER)
   phone         BigInt
   password      String
+  image         String?
+  imageKey      String?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   venues        Venue[]
@@ -208,7 +210,6 @@ model EventBooking {
   User    User     @relation(fields: [userId], references: [id])
   userId  Int
   Event   Event    @relation(fields: [eventId], references: [id])
-  Date    DateTime
   tickets Int
   price   Float
   eventId Int
