@@ -1,4 +1,8 @@
-import { BadGatewayException, Injectable } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  Injectable,
+} from '@nestjs/common';
 import { EditDto } from './dtos/Edit.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthService } from 'src/auth/auth.service';
@@ -110,7 +114,7 @@ export class UserService {
       });
       return 'Image uploaded';
     } catch (error) {
-      return new BadGatewayException(error);
+      return new BadRequestException(error);
     }
   }
 }
