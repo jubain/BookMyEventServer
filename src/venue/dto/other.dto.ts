@@ -87,21 +87,29 @@ export class AddImageDto {
   @ApiProperty({
     type: 'string',
     format: 'binary',
-    description: 'File to be uploaded',
-    required: false,
-  })
-  @IsOptional({ always: true })
-  coverImage?: Express.Multer.File;
-
-  @ApiProperty({
-    type: 'array',
     items: {
       type: 'string',
       format: 'binary',
     },
-    description: 'Files to be uploaded',
+    description: 'File to be uploaded',
     required: false,
   })
   @IsOptional({ always: true })
-  images?: Express.Multer.File[];
+  image?: Express.Multer.File;
+
+  // @ApiProperty({ required: true })
+  // @IsNotEmpty()
+  // @IsString()
+  // coverimage: string;
+
+  // @ApiProperty({
+  //   type: 'array',
+  //   items: {
+  //     type: 'string',
+  //     format: 'binary',
+  //   },
+  //   required: true,
+  // })
+  // @IsOptional({ always: true })
+  // extraImages?: Express.Multer.File[];
 }

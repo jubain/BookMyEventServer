@@ -72,6 +72,13 @@ export class EventController {
     return this.eventService.findAll(filterDto);
   }
 
+  @Get('/images')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  getEventImages() {
+    return this.eventService.getEventImages();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.eventService.findOne(+id);

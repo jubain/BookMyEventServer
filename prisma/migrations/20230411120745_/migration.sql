@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE `VenueBookings` ADD COLUMN `price` DOUBLE NOT NULL DEFAULT 50;

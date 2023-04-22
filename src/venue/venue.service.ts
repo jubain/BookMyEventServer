@@ -133,6 +133,7 @@ export class VenueService {
       name: venue.User.name,
       phone: JSON.parse('' + venue.User.phone),
       email: venue.User.email,
+      image: venue.User.image,
     };
     delete venue.User;
     return { venue, user };
@@ -212,30 +213,7 @@ export class VenueService {
   }
 
   async addVenueImages(
-    coverImage: {
-      coverImage: {
-        fieldname: string;
-        originalname: string;
-        encoding: string;
-        mimetype: string;
-        destination: string;
-        filename: string;
-        path: string;
-        size: number;
-      }[];
-    },
-    images: {
-      images: {
-        fieldname: string;
-        originalname: string;
-        encoding: string;
-        mimetype: string;
-        destination: string;
-        filename: string;
-        path: string;
-        size: number;
-      }[];
-    },
+    image: Express.Multer.File,
     { venueId, type }: AddImageDto,
   ) {
     const venue = await this.prisma.venue.findFirst({
@@ -245,35 +223,20 @@ export class VenueService {
 
     if (type === 'coverImage') {
       const cImage = await this.s3Service.addImage(
-        fs.readFileSync(coverImage.coverImage[0].path),
-        coverImage.coverImage[0].filename,
+        fs.readFileSync(image.path),
+        image.filename,
       );
-      await this.prisma.venueImages.create({
-        data: {
-          key: cImage.Key,
-          type: type,
-          url: cImage.Location,
-          venueId: venue.id,
-        },
-      });
-      return 'Image added!';
-    } else {
-      images.images.forEach(async (img) => {
-        if (venue.VenueImages.length === 6) return;
-        const upload = await this.s3Service.addImage(
-          fs.readFileSync(img.path),
-          img.filename,
-        );
+      if (venue) {
         await this.prisma.venueImages.create({
           data: {
-            key: upload.Key,
+            key: cImage.Key,
             type: type,
-            url: upload.Location,
+            url: cImage.Location,
             venueId: venue.id,
           },
         });
         return 'Image added!';
-      });
+      }
     }
     return new BadRequestException('No more than 6 images!');
   }

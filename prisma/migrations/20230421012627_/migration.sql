@@ -6,6 +6,8 @@ CREATE TABLE `User` (
     `role` ENUM('OWNER', 'CUSTOMER') NOT NULL DEFAULT 'CUSTOMER',
     `phone` BIGINT NOT NULL,
     `password` VARCHAR(191) NOT NULL,
+    `image` VARCHAR(191) NULL,
+    `imageKey` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -116,6 +118,9 @@ CREATE TABLE `EventType` (
 CREATE TABLE `EventImages` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `eventId` INTEGER NULL,
+    `url` VARCHAR(191) NOT NULL,
+    `type` VARCHAR(191) NOT NULL,
+    `key` VARCHAR(191) NOT NULL,
 
     UNIQUE INDEX `EventImages_eventId_key`(`eventId`),
     PRIMARY KEY (`id`)
@@ -128,6 +133,7 @@ CREATE TABLE `VenueBookings` (
     `venueId` INTEGER NOT NULL,
     `startDate` DATETIME(3) NOT NULL,
     `endDate` DATETIME(3) NOT NULL,
+    `price` DOUBLE NOT NULL DEFAULT 50,
     `requestCancel` BOOLEAN NOT NULL DEFAULT false,
 
     PRIMARY KEY (`id`)
@@ -135,13 +141,14 @@ CREATE TABLE `VenueBookings` (
 
 -- CreateTable
 CREATE TABLE `EventBooking` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userId` INTEGER NOT NULL,
-    `Date` DATETIME(3) NOT NULL,
     `tickets` INTEGER NOT NULL,
     `price` DOUBLE NOT NULL,
     `eventId` INTEGER NOT NULL,
 
-    UNIQUE INDEX `EventBooking_userId_eventId_key`(`userId`, `eventId`)
+    UNIQUE INDEX `EventBooking_id_key`(`id`),
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -204,10 +211,10 @@ ALTER TABLE `Event` ADD CONSTRAINT `Event_venueId_fkey` FOREIGN KEY (`venueId`) 
 ALTER TABLE `Event` ADD CONSTRAINT `Event_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `EventType` ADD CONSTRAINT `EventType_eventId_fkey` FOREIGN KEY (`eventId`) REFERENCES `Event`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `EventType` ADD CONSTRAINT `EventType_eventId_fkey` FOREIGN KEY (`eventId`) REFERENCES `Event`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `EventType` ADD CONSTRAINT `EventType_typeEventId_fkey` FOREIGN KEY (`typeEventId`) REFERENCES `TypeEvent`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `EventType` ADD CONSTRAINT `EventType_typeEventId_fkey` FOREIGN KEY (`typeEventId`) REFERENCES `TypeEvent`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `EventImages` ADD CONSTRAINT `EventImages_eventId_fkey` FOREIGN KEY (`eventId`) REFERENCES `Event`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -237,13 +244,13 @@ ALTER TABLE `EventReview` ADD CONSTRAINT `EventReview_userId_fkey` FOREIGN KEY (
 ALTER TABLE `EventReview` ADD CONSTRAINT `EventReview_eventId_fkey` FOREIGN KEY (`eventId`) REFERENCES `Event`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `SavedEvent` ADD CONSTRAINT `SavedEvent_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `SavedEvent` ADD CONSTRAINT `SavedEvent_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `SavedEvent` ADD CONSTRAINT `SavedEvent_eventId_fkey` FOREIGN KEY (`eventId`) REFERENCES `Event`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `SavedEvent` ADD CONSTRAINT `SavedEvent_eventId_fkey` FOREIGN KEY (`eventId`) REFERENCES `Event`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `SavedVenue` ADD CONSTRAINT `SavedVenue_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `SavedVenue` ADD CONSTRAINT `SavedVenue_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `SavedVenue` ADD CONSTRAINT `SavedVenue_venueId_fkey` FOREIGN KEY (`venueId`) REFERENCES `Venue`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `SavedVenue` ADD CONSTRAINT `SavedVenue_venueId_fkey` FOREIGN KEY (`venueId`) REFERENCES `Venue`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

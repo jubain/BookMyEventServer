@@ -166,18 +166,24 @@ export class EventService {
 
   // Bookings
   async createBooking(user: any, body: CreateEventBookingDto) {
+    console.log(body);
     const eventFound = await this.prisma.event.findUnique({
       where: { id: body.eventId },
     });
 
     const booking = await this.prisma.eventBooking.create({
       data: {
-        eventId: body.eventId,
+        eventId: eventFound.id,
         tickets: body.tickets,
         price: eventFound.price * body.tickets,
         userId: user.id,
       },
     });
     return booking;
+  }
+
+  async getEventImages() {
+    const images = await this.prisma.eventImages.findMany();
+    return images;
   }
 }
