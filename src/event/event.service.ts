@@ -70,6 +70,7 @@ export class EventService {
         Venue: true,
         EventReview: true,
         EventType: { select: { TypeEvent: true } },
+        eventsImages: true,
       },
     });
     if (filterDto.city) {
