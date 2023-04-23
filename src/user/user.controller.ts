@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  Param,
   Patch,
   Post,
   Req,
@@ -41,6 +42,11 @@ export class UserController {
   @HttpCode(200)
   getMe(@Req() req: Request) {
     return this.userService.getMe(req.user);
+  }
+
+  @Get('/:id')
+  getUserById(@Param('id') id: string) {
+    return this.userService.getUserById(+id);
   }
 
   @Patch('me')

@@ -10,6 +10,7 @@ import { S3Module } from './s3/s3.module';
 import { EventModule } from './event/event.module';
 import { ExtraModule } from './extra/extra.module';
 import { PaymentModule } from './payment/payment.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { PaymentModule } from './payment/payment.module';
     EventModule,
     ExtraModule,
     PaymentModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

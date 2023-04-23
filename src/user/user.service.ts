@@ -48,6 +48,16 @@ export class UserService {
     delete me.phone;
     return { ...me, phone: '' + phoneString, token };
   }
+
+  async getUserById(id: number) {
+    const user = await this.prisma.user.findFirst({
+      where: { id: id },
+    });
+    delete user.password;
+    delete user.phone;
+    return user;
+  }
+
   async editMe(user: any, body: EditDto) {
     const updatedUser = await this.prisma.user.update({
       where: { email: user.email },

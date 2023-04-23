@@ -134,6 +134,7 @@ export class VenueService {
       phone: JSON.parse('' + venue.User.phone),
       email: venue.User.email,
       image: venue.User.image,
+      id: venue.User.id,
     };
     delete venue.User;
     return { venue, user };

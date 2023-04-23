@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -8,7 +7,6 @@ import {
   ConnectedSocket,
   OnGatewayInit,
 } from '@nestjs/websockets';
-import { VenueBookings } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway()
