@@ -15,7 +15,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { CreateRoomDto } from './dto/create-chat.dto';
-import { ChatGateway } from './chat.gateway';
+// import { ChatGateway } from './chat.gateway';
 
 @Controller('chat')
 @ApiBearerAuth()
@@ -23,8 +23,7 @@ import { ChatGateway } from './chat.gateway';
 @ApiTags('chats')
 export class ChatController {
   constructor(
-    private readonly chatService: ChatService,
-    private chatGateway: ChatGateway,
+    private readonly chatService: ChatService, // private chatGateway: ChatGateway,
   ) {}
 
   @Post()
@@ -53,13 +52,12 @@ export class ChatController {
     @Param('id') id: string,
     @Body() updateChatDto: UpdateChatDto,
   ) {
-    return this.chatService
-      .update(req.user, +id, updateChatDto)
-      .then((chat) => {
-        this.chatGateway.handleSendMessage(chat);
-        return chat;
-      })
-      .catch((err) => err);
+    // return this.chatService.update(req.user, +id, updateChatDto);
+    // .then((chat) => {
+    //   this.chatGateway.handleSendMessage(chat);
+    //   return chat;
+    // })
+    // .catch((err) => err);
   }
 
   @Delete(':id')

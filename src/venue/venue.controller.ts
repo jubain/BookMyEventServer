@@ -30,14 +30,13 @@ import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { AddImageDto, FindVenueDto, QueryParamDto } from './dto/other.dto';
 import { CreateVenueBookingDto } from './dto/createBooking.dto';
-import { VenueGateway } from './venue.gateway';
+// import { VenueGateway } from './venue.gateway';
 
 @Controller('venue')
 @ApiTags('venue')
 export class VenueController {
   constructor(
-    private readonly venueService: VenueService,
-    private venueGateway: VenueGateway,
+    private readonly venueService: VenueService, // private venueGateway: VenueGateway,
   ) {}
 
   @Get('index')
@@ -202,44 +201,41 @@ export class VenueController {
     @Req() req: Request,
     @Body() body: CreateVenueBookingDto,
   ) {
-    return await this.venueService
-      .createBooking(req.user, body)
-      .then((venue) => {
-        this.venueGateway.handleSendMessage(venue);
-        return venue;
-      })
-      .catch((err) => {
-        return err;
-      });
+    return await this.venueService.createBooking(req.user, body);
+    // .then((venue) => {
+    //   this.venueGateway.handleSendMessage(venue);
+    //   return venue;
+    // })
+    // .catch((err) => {
+    //   return err;
+    // });
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Patch('/cancelBooking/:id')
   async cancelBooking(@Param('id') id: string, @Req() req: Request) {
-    return await this.venueService
-      .cancelRequestBooking(+id, req.user)
-      .then((booking) => {
-        this.venueGateway.handleVenueBookingCancelMessage(booking);
-        return booking;
-      })
-      .catch((err) => {
-        return err;
-      });
+    return await this.venueService.cancelRequestBooking(+id, req.user);
+    // .then((booking) => {
+    //   this.venueGateway.handleVenueBookingCancelMessage(booking);
+    //   return booking;
+    // })
+    // .catch((err) => {
+    //   return err;
+    // });
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Delete('/deleteBooking/:id')
   async deleteBooking(@Param('id') id: string, @Req() req: Request) {
-    return await this.venueService
-      .deleteBooking(+id, req.user)
-      .then((booking) => {
-        this.venueGateway.handleVenueBookingDeleteMessage(booking);
-        return booking;
-      })
-      .catch((err) => {
-        return err;
-      });
+    return await this.venueService.deleteBooking(+id, req.user);
+    // .then((booking) => {
+    //   this.venueGateway.handleVenueBookingDeleteMessage(booking);
+    //   return booking;
+    // })
+    // .catch((err) => {
+    //   return err;
+    // });
   }
 }

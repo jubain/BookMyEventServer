@@ -49,22 +49,25 @@ export class ChatService {
     });
   }
 
-  async update(user: any, id: number, updateChatDto: UpdateChatDto) {
+  async update(user: any, id: number, message: string) {
     try {
-      const room = await this.prisma.room.findUnique({
+      const result = await this.prisma.room.update({
         where: { id: id },
+        data: {
+          Message: {
+            create: {
+              senderId: user.sub,
+              message: message,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          },
+        },
         include: { Message: true },
       });
-      await this.prisma.message.create({
-        data: {
-          roomId: room.id,
-          message: updateChatDto.message,
-          senderId: user.id,
-        },
-      });
-
-      return this.findOne(room.id);
+      return result;
     } catch (error) {
+      console.log(error);
       throw new BadGatewayException('Unable to sent the message!');
     }
   }
