@@ -1,19 +1,14 @@
 import {
-  OnGatewayConnection,
-  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
   ConnectedSocket,
-  OnGatewayInit,
   MessageBody,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { ApiBearerAuth } from '@nestjs/swagger';
-import { BadRequestException, Req, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { Request } from 'express';
+import { BadRequestException } from '@nestjs/common';
+
 import * as jwt from 'jsonwebtoken';
 
 @WebSocketGateway(8001, { cors: '*' })

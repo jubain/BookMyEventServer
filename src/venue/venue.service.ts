@@ -271,6 +271,7 @@ export class VenueService {
         body.country
       }&key=${this.config.get('GOOGLE_API')}`,
     );
+
     if (geoCoding.ok) {
       const response = await geoCoding.json();
       if (!response.results.length)
