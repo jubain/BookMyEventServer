@@ -37,10 +37,6 @@ export class VenueService {
       return new BadGatewayException('Location already in use!');
     delete createVenueDto.type;
     try {
-      // const cImage = await this.s3Service.addImage(
-      //   fs.readFileSync(coverImage.coverImage[0].path),
-      //   coverImage.coverImage[0].filename,
-      // );
       const venue = await this.prisma.venue.create({
         data: {
           VenueType: {
@@ -63,28 +59,6 @@ export class VenueService {
         },
       });
       return { status: 200, data: venue };
-      // await this.prisma.venueImages.create({
-      //   data: {
-      //     key: cImage.Key,
-      //     type: 'coverImage',
-      //     url: cImage.Location,
-      //     venueId: venue.id,
-      //   },
-      // });
-      // images.images.forEach(async (img) => {
-      //   const upload = await this.s3Service.addImage(
-      //     fs.readFileSync(img.path),
-      //     img.filename,
-      //   );
-      //   await this.prisma.venueImages.create({
-      //     data: {
-      //       key: upload.Key,
-      //       type: 'extraImages',
-      //       url: upload.Location,
-      //       venueId: venue.id,
-      //     },
-      //   });
-      // });
     } catch (error) {
       return new BadRequestException(error);
     }
