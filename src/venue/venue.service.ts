@@ -81,7 +81,7 @@ export class VenueService {
       where: {
         VenueType: { some: { Type: { name: filterDto.type } } },
       },
-      include: { VenueType: { select: { Type: true } } },
+      include: { VenueType: { select: { Type: true } }, VenueReview: true },
     });
 
     delete filterDto.type;
@@ -228,6 +228,9 @@ export class VenueService {
         }
       });
     });
+    if (filterDto.rating === 'Rating') {
+      return filteredVenue.sort((a, b) => a.rating - b.rating);
+    }
     if (filterDto.price === 'ASCENDING') {
       return filteredVenue.sort((a, b) => a.price - b.price);
     } else if (filterDto.price === 'DESCENDING') {

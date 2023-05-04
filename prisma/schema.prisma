@@ -110,6 +110,7 @@ model Venue {
   longitude     Float           @unique
   VenueType     VenueType[]
   VenueImages   VenueImages[]
+  rating        Int?            @default(1)
 }
 
 model VenueImages {
@@ -263,20 +264,20 @@ model SavedVenue {
 }
 
 model Room {
-  id      Int       @id @default(autoincrement())
-  user1   Int
-  user2   Int
-  Message Message[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int       @id @default(autoincrement())
+  user1     Int
+  user2     Int
+  Message   Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Message {
-  id       Int    @id @default(autoincrement())
-  room     Room   @relation(fields: [roomId], references: [id])
-  roomId   Int
-  senderId Int
-  message  String
+  id        Int      @id @default(autoincrement())
+  room      Room     @relation(fields: [roomId], references: [id])
+  roomId    Int
+  senderId  Int
+  message   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

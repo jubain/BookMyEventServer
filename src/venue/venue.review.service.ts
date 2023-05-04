@@ -25,6 +25,17 @@ export class VenueReviewService {
           userId: user.id,
         },
       });
+      const venueReviews = await this.prisma.venueReview.findMany({
+        where: { venueId: body.venueId },
+      });
+      const sumOfRatings: number = venueReviews.reduce((a, b) => {
+        return a + b.rating;
+      }, 0);
+      const average = sumOfRatings / venueReviews.length;
+      await this.prisma.venue.update({
+        where: { id: body.venueId },
+        data: { rating: average },
+      });
       return `${venue.User.name} thanks you for your review!`;
     } catch (error) {
       throw new HttpException(error, error);

@@ -49,6 +49,10 @@ export class QueryParamDto {
   @IsOptional()
   city?: Cities;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  rating?: 'Rating';
+
   @ApiProperty({ enum: Venue_Type, required: false })
   @IsOptional()
   @IsEnum(Venue_Type)
