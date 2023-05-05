@@ -180,6 +180,7 @@ export class VenueService {
     const venue = await this.prisma.venueImages.findFirst({
       where: { id: id },
     });
+    if (!venue) return;
     await this.prisma.venueImages.delete({
       where: { id: id },
     });
@@ -197,6 +198,7 @@ export class VenueService {
     });
 
     if (type === 'coverImage') {
+      await this.deleteVenueImages(venue.id);
       const cImage = await this.s3Service.addImage(
         fs.readFileSync(image.path),
         image.filename,

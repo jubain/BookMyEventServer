@@ -42,8 +42,8 @@ export class UpdateVenueDto {
 
   @ApiProperty({ required: false })
   @IsString()
-  // @IsOptional({ always: true })
-  @IsNotEmpty()
+  @IsOptional({ always: true })
+  // @IsNotEmpty()
   address2?: string;
 
   @ApiProperty({ required: false })
