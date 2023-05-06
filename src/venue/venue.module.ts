@@ -7,6 +7,7 @@ import { VenueReviewController } from './venue.review.controller';
 import { S3Module } from 'src/s3/s3.module';
 import { S3Service } from 'src/s3/s3.service';
 import { S3FileService } from 'src/s3/file.service';
+import { MailsService } from 'src/mails/mails.service';
 
 @Module({
   imports: [S3Module],
@@ -17,6 +18,7 @@ import { S3FileService } from 'src/s3/file.service';
     // VenueGateway,
     S3Service,
     S3FileService,
+    MailsService,
   ],
 })
 export class VenueModule {}

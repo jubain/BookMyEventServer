@@ -15,6 +15,7 @@ import { Venue } from '@prisma/client';
 import { S3Service } from 'src/s3/s3.service';
 import * as fs from 'fs';
 import * as moment from 'moment';
+import { MailsService } from 'src/mails/mails.service';
 
 @ApiTags('venue')
 @Injectable()
@@ -23,6 +24,7 @@ export class VenueService {
     private prisma: PrismaService,
     private config: ConfigService,
     private s3Service: S3Service,
+    private mailService: MailsService,
   ) {}
 
   async create(user: any, createVenueDto: CreateVenueDto) {
@@ -322,6 +324,7 @@ export class VenueService {
         },
       },
     });
+    this.mailService.sendUserVenueBookingConfirmation(user, venueBooking);
     return venueBooking;
   }
 

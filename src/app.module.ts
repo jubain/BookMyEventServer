@@ -11,6 +11,7 @@ import { EventModule } from './event/event.module';
 import { ExtraModule } from './extra/extra.module';
 import { PaymentModule } from './payment/payment.module';
 import { ChatModule } from './chat/chat.module';
+import { MailsModule } from './mails/mails.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ChatModule } from './chat/chat.module';
     ExtraModule,
     PaymentModule,
     ChatModule,
+    MailsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
