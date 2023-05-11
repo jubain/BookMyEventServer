@@ -7,19 +7,21 @@ export class MailsService {
 
   async sendUserVenueBookingConfirmation(user: any, bookingDetails: any) {
     try {
-      console.log(user, bookingDetails);
-      return await this.mailerService.sendMail({
-        to: 'bepolen307@jobbrett.com',
-        // from: 'jubeenamatya8@gmail.com',
-        subject: `Booking confirmation for the venue`,
-        template: './venueBookingConfirmation',
-        context: {
-          user,
-          bookingDetails,
-        },
-      });
+      if (user) {
+        const email = await this.mailerService.sendMail({
+          to: 'jubeennp@gmail.com',
+          from: 'jubeennp@outlook.com',
+          subject: `Booking confirmation for the venue`,
+          template: './venueBookingConfirmation',
+          context: {
+            name: 'James',
+            bookingDetails: bookingDetails,
+          },
+        });
+        return 'Email sent successfully';
+      }
     } catch (error) {
-      return new BadRequestException(error);
+      // return new BadRequestException(error);
       console.error(error);
     }
   }

@@ -11,19 +11,18 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
   imports: [
     MailerModule.forRoot({
       transport: {
-        host: 'smtp.gmail.com',
+        host: 'smtp.office365.com',
         secure: false,
+        port: 587,
         auth: {
-          user: 'jubeenamatya8@gmail.com',
-          pass: 'Jubeen123!',
+          user: 'jubeennp@outlook.com',
+          pass: 'Jubeen123!@#',
         },
       },
-      // defaults: {
-      //   from: 'jubeenamatya8@gmail.com',
-      // },
+
       preview: true,
       template: {
-        dir: join(__dirname + 'templates'),
+        dir: join(__dirname, 'templates'),
         adapter: new EjsAdapter(),
         options: {
           strict: true,
