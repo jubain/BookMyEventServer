@@ -9,7 +9,7 @@ export class MailsService {
     try {
       if (user) {
         const email = await this.mailerService.sendMail({
-          to: 'jubeennp@gmail.com',
+          to: user.email,
           from: 'jubeennp@outlook.com',
           subject: `Booking confirmation for the venue`,
           template: './venueBookingConfirmation',
