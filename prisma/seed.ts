@@ -6,7 +6,7 @@ async function main() {
   //   where: { email: 'jubeen@email.com' },
   //   update: {},
   //   create: {
-  //     email: 'Jubeen@test.com',
+  //     email: 'Jubeennp@gmail.com.com',
   //     name: 'Jubeen',
   //     password: 'String123!',
   //     phone: 1231231,

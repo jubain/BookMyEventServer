@@ -8,7 +8,8 @@ export class PrismaService extends PrismaClient {
     super({
       datasources: {
         db: {
-          url: config.get('TEST_DATABASE_URL'),
+          // url: config.get('TEST_DATABASE_URL'),
+          url: 'mysql://root:Password@127.0.0.1:3307/BookMyEvent?schema=public',
         },
       },
     });

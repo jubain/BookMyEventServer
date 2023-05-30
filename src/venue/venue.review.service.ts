@@ -31,10 +31,10 @@ export class VenueReviewService {
       const sumOfRatings: number = venueReviews.reduce((a, b) => {
         return a + b.rating;
       }, 0);
-      const average = sumOfRatings / venueReviews.length;
+      const average: number = sumOfRatings / venueReviews.length;
       await this.prisma.venue.update({
         where: { id: body.venueId },
-        data: { rating: average },
+        data: { rating: Math.round(average) },
       });
       return `${venue.User.name} thanks you for your review!`;
     } catch (error) {

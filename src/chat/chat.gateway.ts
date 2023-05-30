@@ -11,7 +11,7 @@ import { BadRequestException } from '@nestjs/common';
 
 import * as jwt from 'jsonwebtoken';
 
-@WebSocketGateway(8001, { cors: '*' })
+@WebSocketGateway(8002, { cors: '*' })
 export class ChatGateway {
   constructor(
     private readonly chatService: ChatService, // private chatGateway: ChatGateway,

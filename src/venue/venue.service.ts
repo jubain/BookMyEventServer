@@ -60,6 +60,7 @@ export class VenueService {
           people: +createVenueDto.people,
         },
       });
+
       return { status: 200, data: venue };
     } catch (error) {
       return new BadRequestException(error);
