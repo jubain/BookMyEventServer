@@ -10,7 +10,7 @@ datasource db {
   provider     = "mysql"
   // url      = env("TEST_DATABASE_URL")
   // url      = "mysql://root:Password@127.0.0.1:3307/BookMyEvent?schema=public"
-  url          = "mysql://p1qgsx8w1y3jztvbj0ol:pscale_pw_enr7GsQL9QParAnnMqzCTXkCIiQPsvob4s9Oxe4fQL4@aws.connect.psdb.cloud/bookmyevent?sslaccept=strict"
+  url          = "DATABASE_URL='mysql://q2bt2bk8b2o4xryhyo4y:pscale_pw_z3v1Imndy6RsfxV9ANUB3hdetLFDoRIU0SW7CgCMYkx@aws.connect.psdb.cloud/bookmyevent?sslaccept=strict"
   relationMode = "prisma"
 }
 
