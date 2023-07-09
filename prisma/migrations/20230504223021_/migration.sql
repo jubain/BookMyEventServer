@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE `Venue` MODIFY `rating` INTEGER NULL DEFAULT 1;

@@ -1,2 +1,2 @@
-CREATE DATABASE IF NOT EXISTS BookMyEvent;
-USE BookMyEvent;
+-- CREATE DATABASE IF NOT EXISTS BookMyEvent;
+-- USE BookMyEvent;
